@@ -26,6 +26,7 @@ public class ChessBoard {
     HashMap<ChessPosition,ChessPiece> board = new HashMap<>();
 
     public ChessBoard() {
+        this.resetBoard();
     }
 
     /**
@@ -35,6 +36,7 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
+
         board.put(position,piece);
     }
 
@@ -46,7 +48,17 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
+
         return board.get(position);
+    }
+
+    /**
+     * Removes a piece from the chessboard
+     *
+     * @param position where to remove the piece
+     */
+    public void removePiece(ChessPosition position) {
+        board.remove(position);
     }
 
     /**
