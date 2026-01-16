@@ -52,6 +52,14 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
+        /* The basic outline of this will be as follows:
+        1. Ask what type of piece this is
+        2. Call the associated class constructor, ie BishopMove
+        2.1. The class BishopMove will need the board and position and color
+        3. The class BishopMove will do all the math
+        3.1 The class BishopMove will create all the instances of ChessMove as it sees fit
+        4. The class BishopMove will have some method or attribute that will return a Collection<ChessMove>
+         */
         throw new RuntimeException("Not implemented");
     }
 
