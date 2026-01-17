@@ -18,6 +18,7 @@ public class PawnMove {
                 3.1 The promotion should yield all possible promotion options, ie 6 moves
             4. A pawn can move diagonal if they can capture a piece
             5. AND they can't move on top of another piece.
+            6. AND make sure they don't move off the board
          Move Math:
          - "Up" - position.row + 1
          - "Down" - position.row - 1
@@ -26,17 +27,86 @@ public class PawnMove {
          */
         promotion_options.remove(ChessPiece.PieceType.KING);
         promotion_options.remove(ChessPiece.PieceType.PAWN);
+        ChessPosition next;
         if (color == ChessGame.TeamColor.WHITE) {
+            if (position.getRow() == 7) {
+                next = new ChessPosition(position.getRow() + 1, position.getColumn());
+                if (board.getPiece(next) == null) {
+                    for (ChessPiece.PieceType promotion : promotion_options) {
+                        moves.add(new ChessMove(position, next, promotion));
+                    }
+                }
+                next = new ChessPosition(position.getRow() + 1, position.getColumn() - 1);
+                if (position.getColumn() !=1 && board.getPiece(next) != null) {
+                    for (ChessPiece.PieceType promotion : promotion_options) {
+                        moves.add(new ChessMove(position, next, promotion));
+                    }
+                }
+                next = new ChessPosition(position.getRow() + 1, position.getColumn() + 1);
+                if (position.getColumn() != 8 && board.getPiece(next) != null) {
+                    for (ChessPiece.PieceType promotion : promotion_options) {
+                        moves.add(new ChessMove(position, next, promotion));
+                    }
+                }
+            } else {
+                next = new ChessPosition(position.getRow()+1,position.getColumn());
+                if (board.getPiece(next) == null) {
+                    moves.add(new ChessMove(position, next, null));
+                    if (position.getRow() == 2) {
+                        next = new ChessPosition(position.getRow()+2,position.getColumn());
+                        if (board.getPiece(next) == null)
+                            moves.add(new ChessMove(position, next, null));
+                        }
+                    }
+                }
+                next = new ChessPosition(position.getRow()+1,position.getColumn()-1);
+                if (position.getColumn() != 1 && board.getPiece(next) != null) {
+                    moves.add(new ChessMove(position, next, null));
+                }
+                next = new ChessPosition(position.getRow()+1,position.getColumn()+1);
+                if (position.getColumn() != 8 && board.getPiece(next) != null) {
+                    moves.add(new ChessMove(position, next, null));
+                }
+        } else if (color == ChessGame.TeamColor.BLACK) {
             if (position.getRow() == 2) {
-                moves.add(new ChessMove(position, new ChessPosition(position.getRow() + 1, position.getColumn()),null));
-                moves.add(new ChessMove(position, new ChessPosition(position.getRow() + 2, position.getColumn()),null));
-            } else if (position.getRow() == 7) {
-                for (ChessPiece.PieceType promotion : promotion_options) {
-                    moves.add(new ChessMove(position, new ChessPosition(position.getRow() + 1, position.getColumn()),promotion));
+                next = new ChessPosition(position.getRow() - 1, position.getColumn());
+                if (board.getPiece(next) == null) {
+                    for (ChessPiece.PieceType promotion : promotion_options) {
+                        moves.add(new ChessMove(position, next, promotion));
+                    }
+                }
+                ;
+                next = new ChessPosition(position.getRow() - 1, position.getColumn() - 1);
+                if (position.getColumn() != 1 && board.getPiece(next) != null) {
+                    for (ChessPiece.PieceType promotion : promotion_options) {
+                        moves.add(new ChessMove(position, next, promotion));
+                    }
+                }
+                next = new ChessPosition(position.getRow() - 1, position.getColumn() + 1);
+                if (position.getColumn() != 8 && board.getPiece(next) != null) {
+                    for (ChessPiece.PieceType promotion : promotion_options) {
+                        moves.add(new ChessMove(position, next, promotion));
+                    }
+                }
+            } else {
+                next = new ChessPosition(position.getRow()-1,position.getColumn());
+                if (board.getPiece(next) == null) {
+                    moves.add(new ChessMove(position, next, null));
+                    if (position.getRow() == 7) {
+                        next = new ChessPosition(position.getRow()-2,position.getColumn());
+                        if (board.getPiece(next) == null)
+                            moves.add(new ChessMove(position, next, null));
+                    }
                 }
             }
-        } else if (color == ChessGame.TeamColor.BLACK) {
-
+            next = new ChessPosition(position.getRow()-1,position.getColumn()-1);
+            if (position.getColumn() != 1 && board.getPiece(next) != null) {
+                moves.add(new ChessMove(position, next, null));
+            }
+            next = new ChessPosition(position.getRow()-1,position.getColumn()+1);
+            if (position.getColumn() != 8 && board.getPiece(next) != null) {
+                moves.add(new ChessMove(position, next, null));
+            }
         }
     }
 }
