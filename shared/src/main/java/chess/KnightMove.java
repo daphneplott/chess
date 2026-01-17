@@ -2,6 +2,7 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class KnightMove {
     private ArrayList<ChessMove> moves = new ArrayList<>();
@@ -39,6 +40,23 @@ public class KnightMove {
                 }
             }
         }
+    }
 
+    public ArrayList<ChessMove> getMoves() {
+        return this.moves;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        KnightMove that = (KnightMove) o;
+        return Objects.equals(moves, that.moves);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(moves);
     }
 }

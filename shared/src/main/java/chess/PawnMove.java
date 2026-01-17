@@ -2,6 +2,7 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class PawnMove {
 
@@ -116,5 +117,23 @@ public class PawnMove {
                 moves.add(new ChessMove(position, next, null));
             }
         }
+    }
+
+    public ArrayList<ChessMove> getMoves() {
+        return this.moves;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        PawnMove pawnMove = (PawnMove) o;
+        return Objects.equals(moves, pawnMove.moves) && Objects.equals(promotion_options, pawnMove.promotion_options);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(moves, promotion_options);
     }
 }

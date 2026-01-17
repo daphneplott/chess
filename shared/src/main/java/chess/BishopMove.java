@@ -1,7 +1,7 @@
 package chess;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Objects;
 
 public class BishopMove {
     private ArrayList<ChessMove> moves = new ArrayList<>();
@@ -81,5 +81,23 @@ public class BishopMove {
                 } else {break;}
             } else {break;}
         }
+    }
+
+    public ArrayList<ChessMove> getMoves() {
+        return this.moves;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        BishopMove that = (BishopMove) o;
+        return Objects.equals(moves, that.moves);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(moves);
     }
 }
