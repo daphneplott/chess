@@ -3,12 +3,6 @@ package chess;
 import java.util.HashMap;
 import java.util.Objects;
 
-/**
- * A chessboard that can hold and rearrange chess pieces.
- * <p>
- * Note: You can add to this class, but you may not alter
- * signature of the existing methods.
- */
 
 /* Notes to self: This object needs to represent the functionality of the board, representing like the physical object.
 Information that it needs to communicate:
@@ -20,6 +14,13 @@ Here's the textbook's notes on the good ole HashMap:
 - put(key, value)
 - remove(key)
     */
+
+/**
+ * A chessboard that can hold and rearrange chess pieces.
+ * <p>
+ * Note: You can add to this class, but you may not alter
+ * signature of the existing methods.
+ */
 
 public class ChessBoard {
 
@@ -50,14 +51,6 @@ public class ChessBoard {
         return board.get(position);
     }
 
-    /**
-     * Removes a piece from the chessboard
-     *
-     * @param position where to remove the piece
-     */
-    public void removePiece(ChessPosition position) {
-        board.remove(position);
-    }
 
     /**
      * Sets the board to the default starting board

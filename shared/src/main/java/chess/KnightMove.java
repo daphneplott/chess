@@ -23,13 +23,13 @@ public class KnightMove {
         Make sure the knight doesn't move off the board
 
          */
-        ArrayList<Pair> potential_math = new ArrayList<Pair>(Arrays.asList(
+        ArrayList<Pair> potentialMath = new ArrayList<Pair>(Arrays.asList(
                 new Pair(1,2), new Pair(1,-2), new Pair(-1,2),new Pair(-1,-2),
                 new Pair(2,1), new Pair(2, -1), new Pair(-2, 1), new Pair(-2, -1)
         ));
         ChessPosition next;
         ChessPiece piece;
-        for (Pair pair : potential_math) {
+        for (Pair pair : potentialMath) {
             if (position.getColumn() + pair.y() < 9 && position.getColumn() + pair.y() >0 &&
                     position.getRow() + pair.x() < 9&& position.getRow()+pair.x() > 0
                 ) {

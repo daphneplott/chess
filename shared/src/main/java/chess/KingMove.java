@@ -20,14 +20,14 @@ public class KingMove {
          - All pairs of +-1 or 0
 
          */
-        ArrayList<Pair> potential_math = new ArrayList<>(Arrays.asList(
+        ArrayList<Pair> potentialMath = new ArrayList<>(Arrays.asList(
                 new Pair(1,0), new Pair(1,1), new Pair(1,-1),
                 new Pair(-1,0),new Pair(-1,1), new Pair(-1,-1),
                 new Pair(0,1), new Pair(0,-1)
         ));
         ChessPosition next;
         ChessPiece piece;
-        for (Pair pair : potential_math) {
+        for (Pair pair : potentialMath) {
             if (position.getColumn() + pair.y() < 9 && position.getColumn() + pair.y() >0 &&
                     position.getRow() + pair.x() < 9&& position.getRow()+pair.x() > 0
             ) {
