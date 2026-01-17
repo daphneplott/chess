@@ -16,7 +16,7 @@ public class PawnMove {
             2. Otherwise, they can move one space up for white, one space down for black
             3. If the end position will be the end (8 for white, 1 for black), they also get to promote.
                 3.1 The promotion should yield all possible promotion options, ie 6 moves
-            4. A pawn can move diagonal if they can capture a piece
+            4. A pawn can move diagonal if they can capture a piece of the other color.
             5. AND they can't move on top of another piece.
             6. AND make sure they don't move off the board
          Move Math:
@@ -28,6 +28,7 @@ public class PawnMove {
         promotion_options.remove(ChessPiece.PieceType.KING);
         promotion_options.remove(ChessPiece.PieceType.PAWN);
         ChessPosition next;
+        ChessPiece piece;
         if (color == ChessGame.TeamColor.WHITE) {
             if (position.getRow() == 7) {
                 next = new ChessPosition(position.getRow() + 1, position.getColumn());
@@ -37,13 +38,15 @@ public class PawnMove {
                     }
                 }
                 next = new ChessPosition(position.getRow() + 1, position.getColumn() - 1);
-                if (position.getColumn() !=1 && board.getPiece(next) != null) {
+                piece = board.getPiece(next);
+                if (position.getColumn() !=1 && piece != null && piece.getTeamColor() != color) {
                     for (ChessPiece.PieceType promotion : promotion_options) {
                         moves.add(new ChessMove(position, next, promotion));
                     }
                 }
                 next = new ChessPosition(position.getRow() + 1, position.getColumn() + 1);
-                if (position.getColumn() != 8 && board.getPiece(next) != null) {
+                piece = board.getPiece(next);
+                if (position.getColumn() != 8 && piece != null && piece.getTeamColor() != color) {
                     for (ChessPiece.PieceType promotion : promotion_options) {
                         moves.add(new ChessMove(position, next, promotion));
                     }
@@ -60,11 +63,13 @@ public class PawnMove {
                     }
                 }
                 next = new ChessPosition(position.getRow()+1,position.getColumn()-1);
-                if (position.getColumn() != 1 && board.getPiece(next) != null) {
+                piece = board.getPiece(next);
+                if (position.getColumn() != 1 && piece != null && piece.getTeamColor() != color) {
                     moves.add(new ChessMove(position, next, null));
                 }
                 next = new ChessPosition(position.getRow()+1,position.getColumn()+1);
-                if (position.getColumn() != 8 && board.getPiece(next) != null) {
+                piece = board.getPiece(next);
+                if (position.getColumn() != 8 && piece != null && piece.getTeamColor() != color) {
                     moves.add(new ChessMove(position, next, null));
                 }
         } else if (color == ChessGame.TeamColor.BLACK) {
@@ -75,15 +80,16 @@ public class PawnMove {
                         moves.add(new ChessMove(position, next, promotion));
                     }
                 }
-                ;
                 next = new ChessPosition(position.getRow() - 1, position.getColumn() - 1);
-                if (position.getColumn() != 1 && board.getPiece(next) != null) {
+                piece = board.getPiece(next);
+                if (position.getColumn() != 1 && piece != null && piece.getTeamColor() != color) {
                     for (ChessPiece.PieceType promotion : promotion_options) {
                         moves.add(new ChessMove(position, next, promotion));
                     }
                 }
                 next = new ChessPosition(position.getRow() - 1, position.getColumn() + 1);
-                if (position.getColumn() != 8 && board.getPiece(next) != null) {
+                piece = board.getPiece(next);
+                if (position.getColumn() != 8 &&  piece != null && piece.getTeamColor() != color) {
                     for (ChessPiece.PieceType promotion : promotion_options) {
                         moves.add(new ChessMove(position, next, promotion));
                     }
@@ -100,11 +106,13 @@ public class PawnMove {
                 }
             }
             next = new ChessPosition(position.getRow()-1,position.getColumn()-1);
-            if (position.getColumn() != 1 && board.getPiece(next) != null) {
+            piece = board.getPiece(next);
+            if (position.getColumn() != 1 && piece != null && piece.getTeamColor() != color) {
                 moves.add(new ChessMove(position, next, null));
             }
             next = new ChessPosition(position.getRow()-1,position.getColumn()+1);
-            if (position.getColumn() != 8 && board.getPiece(next) != null) {
+            piece = board.getPiece(next);
+            if (position.getColumn() != 8 && piece != null && piece.getTeamColor() != color) {
                 moves.add(new ChessMove(position, next, null));
             }
         }
