@@ -42,7 +42,7 @@ public class RookMove {
         This second for loop will go with straight down (-, 0)
          */
         for (int x = 1; x < 8; x++) {
-            if (position.getRow() + x >0) {
+            if (position.getRow() - x >0) {
                 next = new ChessPosition(position.getRow() - x, position.getColumn());
                 piece = board.getPiece(next);
                 if (piece == null) {

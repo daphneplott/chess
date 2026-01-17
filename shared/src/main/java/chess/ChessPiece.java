@@ -60,7 +60,25 @@ public class ChessPiece {
         3.1 The class BishopMove will create all the instances of ChessMove as it sees fit
         4. The class BishopMove will have some method or attribute that will return a Collection<ChessMove>
          */
-        throw new RuntimeException("Not implemented");
+        if (this.type == PieceType.PAWN) {
+            PawnMove pawnMove = new PawnMove(board,myPosition,this.color);
+            return pawnMove.getMoves();
+        } else if (this.type == PieceType.QUEEN) {
+            QueenMove queenMove = new QueenMove(board, myPosition,this.color);
+            return queenMove.getMoves();
+        } else if (this.type == PieceType.ROOK) {
+            RookMove rookMove = new RookMove(board,myPosition,this.color);
+            return rookMove.getMoves();
+        } else if (this.type == PieceType.KING) {
+            KingMove kingMove = new KingMove(board,myPosition,this.color);
+            return kingMove.getMoves();
+        } else if (this.type == PieceType.KNIGHT) {
+            KnightMove knightMove = new KnightMove(board, myPosition,this.color);
+            return knightMove.getMoves();
+        } else { // ie: if (this.type == PieceType.BISHOP)
+            BishopMove bishopMove = new BishopMove(board, myPosition,this.color);
+            return bishopMove.getMoves();
+        } // I don't know HOW it would happen ... but if our piece has some other type than these, this function will break.
     }
 
     @Override
@@ -75,5 +93,13 @@ public class ChessPiece {
     @Override
     public int hashCode() {
         return Objects.hash(color, type);
+    }
+
+    @Override
+    public String toString() {
+        return "ChessPiece{" +
+                color +
+                ", " + type +
+                '}';
     }
 }

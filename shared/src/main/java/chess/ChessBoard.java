@@ -25,9 +25,7 @@ public class ChessBoard {
 
     HashMap<ChessPosition,ChessPiece> board = new HashMap<>();
 
-    public ChessBoard() {
-        this.resetBoard();
-    }
+    public ChessBoard() {}
 
     /**
      * Adds a chess piece to the chessboard

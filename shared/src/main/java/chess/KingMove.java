@@ -20,9 +20,9 @@ public class KingMove {
          - All pairs of +-1 or 0
 
          */
-        ArrayList<Pair> potential_math = new ArrayList<Pair>(Arrays.asList(
+        ArrayList<Pair> potential_math = new ArrayList<>(Arrays.asList(
                 new Pair(1,0), new Pair(1,1), new Pair(1,-1),
-                new Pair(-1,0),new Pair(-1,1), new Pair(1,-1),
+                new Pair(-1,0),new Pair(-1,1), new Pair(-1,-1),
                 new Pair(0,1), new Pair(0,-1)
         ));
         ChessPosition next;
