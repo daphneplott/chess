@@ -129,7 +129,72 @@ Overwriting methods:
 REMINDER: Primitives do not have any methods, so can't be called with a .equals() methods, and works just fine wtih ==.
 
 ## Inheritance
-Use "public class Child extends Parent". 
+Code reuse mechanism. Ability to modify a class and add on additional methods or variables. Importing information and then adding something. You can also override methods to make them work the way you want for the child. A class can only inherit from one other class.
+
+Polymorphism - ability to store multiple different object types by using their parent type. Being able to interact with objects, even if you don't know exactly what it is, you know sort of what they all have because of their super methods.
+
+Ability to be generic in parameter type to provide flexibility (ie, ArrayList vs Collection).
+
+Syntax:
+```
+public class Student extends Person {
+  public Student() {
+    super(); 
+    setYear(YearInSchool.FRESHMAN);
+    setGPA(0.0)
+  }
+  public Student(String name, int age, YearInSchool year, float gpa) {
+    super(name, age);
+    this.year = year;
+    this.gpa = gpa;
+  }
+  ...
+  @Override
+  public boolean equals(Object o) {
+    boolean b = super.equals(o);
+    if (!b) {
+      return false;
+    } else {
+      Student s = (Student) o;
+      return (year == s.year && gpa == s.gpa)
+    }  
+  }
+
+  @Override
+  public int hashCode() {
+    return (super.hashCode() * (int)gpa) ^ year.hashCode();
+  }  
+}
+```
+
+Using methods in the Parent class
+- protected: function keyword, a member only visible to the inheritance tree, something that all descendants can access (also something the package can access in Java)
+- Claim a protected method so that the child can override it on purpose (use @Override)
+- A child can't access a private variable, so if the student wants to access its age, you have to use the getAge method.
+- abstract: function keyword, saying you're declaring a method, but you aren't defining it for the parent
+  - protected abstract int agePriority();
+- If a class has an abstract method, it become abstract, so you have to label the class as abstract because it isn't fully defined
+  - Cannot call new on an abstract class
+  - Conveying intent of not wanting a parent object directly
+- An abstract class only has purpose in being a super class.
+- final: function keyword, saying a child CANNOT override that method
+  - A class can be tagged final if you can't inherit from that class
+
+
+## Interface Inheritance
+A class that only has abstract method definitions. A datatype that a class can implement. Polymorphism without inheriting code.
+
+Keyword is "implement" the interface. Promising to have all the interface methods. Can implement as many interfaces as you want.
+
+public class Person extends whatever implements Moveable, Comparable, Runnable {}
+
+Declaration: public interface Name { void go(); } 
+- Includes return and paramater types, but no other keywords, no need to call abstract
+
+An interface can extend from another interface - public interface MyInterface extends Moveable
+
+To get rid of any duplication in code, you can introduce an abstract class between the interface and the full classes to implement any shared code.
+
 
 ## Enumeration
 A different type of Java file. Example:
@@ -155,5 +220,14 @@ Tips for default or incomplete construction:
 
 You can call one constructor from another one by using the call "this(input)".
 
+## Records
+Sometimes, you have a class that only holds data, but doesn't really implement any meaningful algorithms. Easily written or generated.
 
+To simplify this, you can use a record. 
+
+Example: public record Pet(int id, String name, String type) {}
+
+... and that's all you need. Java will fill in the dots for getter and setter methods, hash codes, equals, etc.
+
+Record objects are immutable. Getter methods don't have 'get' in it - instead of .getName(), it's just .name(). You can add in additional methods to the record, but they can't change any of the attribute values.
 
