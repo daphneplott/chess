@@ -231,3 +231,139 @@ Example: public record Pet(int id, String name, String type) {}
 
 Record objects are immutable. Getter methods don't have 'get' in it - instead of .getName(), it's just .name(). You can add in additional methods to the record, but they can't change any of the attribute values.
 
+## Copying Objects
+
+Shallow copy - creates a new object of the same class, but doesn't copy the variable values, it just links them. If you modify one of the variables in the previous object, then it will modify the copy as well.
+
+Deep copy - creates a copy of the object, and creates a copy of each nested variable.
+
+You don't need to copy any immutable objects, becuase you don't have to worry about someone messing up the original value.
+
+Writing classes to support copying: 
+- Method 1: call new and pass in the original object to the constructor, constructor example is "public Course(Course other) {setName(other.name)}
+- Method 2: call object.clone() - official method in java, clone() method belongs to Object class, clone() calls copy constructor. You don't need to remember which object type it is to copy it.
+- You need to copy each variable as well if they aren't immutable. If the variables are immutable, you can just set the value.
+- When creating a deep copy of a list, for example, you need to copy and add in each element from the original list.
+- Default Java clone only makes a shallow copy
+
+# Error Handling
+
+Causes of Errors: 
+- Bugs in a code - null pointers, etc, just fix it
+- Bad input given
+- Out of memory
+- Runtime stack overflow
+- Bad internet connection
+
+Java forces you to deal with erorrs - you either have to handle it, or advertise the fact that you didn't. If you don't deal with an error, it will kill your code.
+These rules do not apply to Errors or RuntimeExceptions.
+
+Handle: 
+
+An exception will be detecting way down low in the operating system. That system will gather information about it, and 'throws' the exception upward until a program says "I know what to do about it". Adding in handling lets your program deal with it before the terminal yells at you, and being able to gracefully exit your code.
+
+```
+try {regular code}
+catch (Exception ex) {error handling code}
+catch (otherExceptionType ex) {handling another error}
+continuation code
+```
+
+Declare:
+
+Advertise the fact that you didn't handle any exceptions. Lets the programmer know what exceptions may be thrown from a certain function or subfunction. 
+```
+public void method()
+    throws Exception {}
+```
+
+Details:
+
+You can only throw an object. Throwable --> Exception and Error
+- Error is catastrophic, something you're program won't recover from, so you might as well ignore it.
+- Exceptions --> IOException, InvalidURL
+  - These are the ones that Java will check, so you need to have exceptions for these
+- Exceptions --> RuntimeException --> NullPointer, IndexOutOfBounds
+  - RuntimeExceptions are not checked by Java - things that are your fault, have to do with bugs, things you should just fix
+  - Too common to bother enforcing, because really anything could call it
+
+Common Errors and General advice:
+- An object constructor or method can throw an error
+- Main methods probably shouldn't throw an error, or else it's a bad program
+- Can use ex.printStackTrace()
+- Multiple catch blocks for different errors
+- Even if you don't do anything useful, and you just end the program, you should exit gracefully and provide useful information to the user
+- Use a finally clause (which happens after both try and catch) to do anything that needs to happen every time, something you don't want to accidentally skip, like closing a file, or deallocating other resources
+- Java added try with resource: try (open scanner) {} which lets Java write the finally block automatically
+
+Creating custom exception types: public class CustomName extends Exception {imitate normal exception methods}
+
+# Collections
+
+When regular arrays do not suffice; Collections can only store object references; implements many useful associated algorithms.
+
+Types:
+- Collection --> List, Set (--> SortedSet --> NavigableSet), Queue (--> Deque)
+  - Add, remove, length, iterator methods
+- Map --> SortedMap --> NavigableMap
+  - Key-Value pairs
+- Iterator --> ListIterator
+  - Iterates through values in a Collection
+ 
+Lists
+- Ordered, accessed by index
+- ArrayList, LinkedList
+- Uses a more powerful iterator called a ListIterator
+
+Set 
+- Unordered, no duplicate values
+- HashSet (need a good Hash/Equal methods), TreeSet (needs comparability), LinkedHashSet
+
+Queue
+- Holding elements in an order, can only return one element, no random access
+- add, peek, remove
+- ArrayDeque, LinkedList, Stack, PriorityQueue
+
+Deque
+- Double ended queue, insert/remove both ends
+- ArrayDeque, LinkedList
+
+Stack 
+- Don't actually use the Java stack, use the Deque
+
+Maps
+- key-value pairs, put, get, contains, remove, key/value/entry sets
+- HashMap, TreeMap, LinkedHashMap
+
+Iterable
+- Can iterate over collections
+- Use for (Object o : collection)
+
+## Equality Checking
+Default Java is to compare objects by identity/address. You have to be careful what 'equals' means for two different collections.
+
+## Sorted Collections
+
+TreeSet, TreeMap, PriorityQueue
+
+Elements in a sorted collection need to be comparable - there must be a working >, <, and == methods
+
+Implementation:
+
+```
+public class TimeOfDay implements Comparable<TimeOfDay> { ...
+  @Override
+  public int compareTo(TimeOfDay timeOfDay) {
+    int result = Integer.compare(hour, timeOfDay.hour);
+    if (result == 0) {
+      result = Integer.compare(minute, timeOfDay.minute);
+    }
+    return result;
+  } ...
+}
+```
+
+A Compare function returns a negative value if you are smaller, 0 if you are equal, and positive if you are larger. Most smaller classes have a built in compare method. 
+
+What happens if you modify an object that is currently in a tree? It's sort order could change, and now it's in the wrong place, and now your tree is broken. If you want to change an object, you must take it out, then change it, then put it back in. If it's not in the right place, then your tree can't find it, and may say it's not in there when it is. If it's in a Hash, then if you change it it's Hash will change, and now you can't access it again.
+
