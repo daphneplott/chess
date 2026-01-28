@@ -367,3 +367,87 @@ A Compare function returns a negative value if you are smaller, 0 if you are equ
 
 What happens if you modify an object that is currently in a tree? It's sort order could change, and now it's in the wrong place, and now your tree is broken. If you want to change an object, you must take it out, then change it, then put it back in. If it's not in the right place, then your tree can't find it, and may say it's not in there when it is. If it's in a Hash, then if you change it it's Hash will change, and now you can't access it again.
 
+# I/O
+
+File Class - wrapper around a file path, exists(), createNewFile(), delete()
+
+## Streams
+Low level read in. Takes in bytes or characters. InputStream takes in bytes or binary, which are video, image, etc, but NOT text. Reader and Writer read and write characters, which is text formatted data. Processes data sequentially. 
+
+Data Sources
+- File
+- Keyboard input
+- Socket/network connection
+- Pipes
+- URL pages
+
+Transformations
+- Decompress/compress data - like a zip file
+- Decryption/encryption
+- Compute a "digest" - run a hash to get a fingerprint of the file
+- Byte counting
+- Line counting
+- Buffering - collect a chunk instead of just a single byte
+
+Transformations are applied as wrapper classes that take the data file as input. Work like a linked list of streams.
+
+DataOutputStream class lets you write binary-formatted data values
+
+Reader/Writer interfaces are basically identical to the InputStream/OutputStream, but apply to text and characters.
+
+Wrapper classes
+- PrintWriter lets you write text-formatted data values (tokens)
+- Scanner lets you read text-formatted data tokens
+
+Use classes InputStreamReader or OutputStreamWriter to convert a stream to a reader
+
+## Scanner
+
+Methods
+- hasNext()
+- next()
+- nextInt(), nextFloat(), etc
+- useDelimiter(regex telling it what the token divider is - white space)
+  - Use to skip comments
+  - Overrides the delimeter - can only have one at a time, so use | in the regex if you want multiple
+
+## In addition...
+
+Files
+- Class that lets you readAllLines and get a List<String> back
+
+RandomAccessFile
+- Ability to access information without going sequentially
+- file pointer represents current location
+- ability to move pointer to wherever you want, skipBytes(int), seek(long)
+- Can read or write from where the pointer is
+
+# JSON
+
+Java-Script Object Notation
+
+Specific format for sharing data. Text-based, Java-Script objects. Holds strings, numbers, boolean, array, objects, and null. Each object is like a dictionary, a set of key-value pairs. Like holding all the attributes of a python/java object. Nesting of lists and objects. Textual representation of a data tree. 
+
+## I/O
+Libraries in Java that are structured to both parse and create Json files.
+
+Stream Parser
+- Tokenizers that return one token at a time from the Json file
+- Tokens are things like "begin object", "Key Name", "end object"
+- Useful for pulling out one peice of data in the middle, or only when you want to read some of it
+
+DOM
+- Converts JSON text to an in-memory tree data structure
+- Traverse the DOM to extract information
+- Document Object Model (tree)
+
+Serializer
+- Going from Java object to Json file string
+- Deserialize - take Json file string and turn it into a Java object
+- Easy way to store our objects elsewhere
+- Gson library - Gson gson = GsonBuilder().setPrettyPrint().create(); String jsonString = gson.toJson(java object);
+- Gson gson = new Gson(); Object object = gson.fromJson(Reader, Object.class);
+- Gson struggles with interfaces and inheritance - need to use a TypeAdapter
+  - gson.registerTypeAdapter(Object.class, new TypeAdapter)
+  - Override public Object read(JsonReader) which takes in the stream parser, and then parse it yourself
+
