@@ -246,6 +246,72 @@ Writing classes to support copying:
 - When creating a deep copy of a list, for example, you need to copy and add in each element from the original list.
 - Default Java clone only makes a shallow copy
 
+## Inner Classes
+Purpose: Limiting scope, hiding information from external calls
+
+If tagged as static, nested class doesn't have any special access to variables or methods. But if it isn't tagged as static, it can access any variables or methods of that object. This means you don't have to pass in additional values when creating the class, it can access your array already. If you don't want to pass method parameters, you can move the inner class to inside a method - called a local class. Where and how you define it determines which variable scope it has. If the class only gets used/called once, you can make it anonymous (without a name) by doing "return new SuperClass() {all the code}". What is the point of an anonymous function? If you really only use it in one place, don't bother giving it a name. These are more like Event Handler mini functions.
+
+## Generic classes
+
+Similar to a Template in C++, useful in strongly typed languages, where you have to know what kind of variable everything is. For example, ArrayList is a generic type, which has only 1 implementation, but you have to pass in a type. 
+
+Example:
+```
+public class Pair<T, U> {
+  private T value1;
+  private U value2;
+
+  public Pair(T value1, U value2) {
+    this.value1 = value1;
+    this.value2 = value2;
+  }
+
+  public T getValue1() {
+    return value1;
+  }
+}
+```
+
+However, when you pass in the types, they have to be objects, not primitives. 
+
+Instantiating a Generic Class: Pair<String, Integer> pair = new Pair<>("Hello", 123), can also be written as var pair = new Pair<String, Integer>("Hello", 123), where you can use 'var' to infer the variable type. 
+
+Inheritance - can use inheritance to fill in type parameters with hardcoded value types.
+
+public class StringPair extends Pair<String, String>
+
+public class KeyValuePair<V> extends Pair<String, V>
+
+Generic interfaces - can also be used to fill in type parameters. Can be used to pass in function objects, called "first class functions", where you can declare a variable, and store a function in it. Treating functions as a piece of data. 
+
+Wildcards - use a special syntax of "?" to expand acceptable types. Instead of List<T>, you can make it include additional object types using List<? super T> or List<? extends T> to extend it to either super classes of type T, or any subclasses of type T. 
+
+# Lambda Expressions
+
+Anonymous functions, in-line, can be passed in as parameters, or stored as variables.
+
+A functional interface is an interface that only has one method on it. Instead of writing a class, you can use a lambda function.
+
+Syntax: (Parameter list) -> {function body}
+- If only one parameter, can leave off parentheses
+- If only one expression in the function body, it doesn't need curly braces, and it doesn't need a 'return' statement
+
+How does the compiler deal with Lambda functions?
+- Needs to convert a function to the parameter type called by the object method
+- Gets converted to an anonymous inner class
+- Converts concise syntax to verbose syntax
+- Because of that, the parameter type NEEDS to be a functional interface, so that the compiler knows exactly which method to implement with the lambda
+
+Functional Interfaces
+- Runnable, method void run()
+- Callable<V>, method V call()
+- Comparable<T>, method in compare(T, T)
+- Predicate, method bool test(input)
+
+Creating function variables - store the lambda in a variable, and then you can call it multiple times in different places. You can call the variable like it's a function (although the syntax is more like an object method).
+
+A lambda function can also be replaced with a method reference if the function really just calls another built in function. You can change x -> System.out.println(x) to System.out::println. You can pass in method names, or the 'new' constructor.
+
 # Error Handling
 
 Causes of Errors: 
