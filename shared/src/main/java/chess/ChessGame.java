@@ -152,6 +152,19 @@ public class ChessGame {
         return isInCheck(teamColor,this.board);
     }
 
+    private boolean movesLeft(TeamColor teamColor) {
+        for (Map.Entry<ChessPosition, ChessPiece> entry : board.getEntries()) {
+            ChessPosition position = entry.getKey();
+            ChessPiece piece = entry.getValue();
+            if (piece.getTeamColor() == teamColor) {
+                Collection<ChessMove> someMoves = validMoves(position);
+                if (!someMoves.isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
     /**
      * Determines if the given team is in checkmate
      *
@@ -159,9 +172,11 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
         // Ask - is in check?
         // See if I have any valid moves
+        boolean b1 = isInCheck(teamColor);
+        boolean b2 = movesLeft(teamColor);
+        return b1 && !b2;
     }
 
     /**
@@ -172,9 +187,11 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
         // Ask - is in check?
         // See if I have any valid moves
+        boolean b1 = isInCheck(teamColor);
+        boolean b2 = movesLeft(teamColor);
+        return !b1 && !b2;
     }
 
     /**
