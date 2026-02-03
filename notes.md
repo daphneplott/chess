@@ -129,7 +129,72 @@ Overwriting methods:
 REMINDER: Primitives do not have any methods, so can't be called with a .equals() methods, and works just fine wtih ==.
 
 ## Inheritance
-Use "public class Child extends Parent". 
+Code reuse mechanism. Ability to modify a class and add on additional methods or variables. Importing information and then adding something. You can also override methods to make them work the way you want for the child. A class can only inherit from one other class.
+
+Polymorphism - ability to store multiple different object types by using their parent type. Being able to interact with objects, even if you don't know exactly what it is, you know sort of what they all have because of their super methods.
+
+Ability to be generic in parameter type to provide flexibility (ie, ArrayList vs Collection).
+
+Syntax:
+```
+public class Student extends Person {
+  public Student() {
+    super(); 
+    setYear(YearInSchool.FRESHMAN);
+    setGPA(0.0)
+  }
+  public Student(String name, int age, YearInSchool year, float gpa) {
+    super(name, age);
+    this.year = year;
+    this.gpa = gpa;
+  }
+  ...
+  @Override
+  public boolean equals(Object o) {
+    boolean b = super.equals(o);
+    if (!b) {
+      return false;
+    } else {
+      Student s = (Student) o;
+      return (year == s.year && gpa == s.gpa)
+    }  
+  }
+
+  @Override
+  public int hashCode() {
+    return (super.hashCode() * (int)gpa) ^ year.hashCode();
+  }  
+}
+```
+
+Using methods in the Parent class
+- protected: function keyword, a member only visible to the inheritance tree, something that all descendants can access (also something the package can access in Java)
+- Claim a protected method so that the child can override it on purpose (use @Override)
+- A child can't access a private variable, so if the student wants to access its age, you have to use the getAge method.
+- abstract: function keyword, saying you're declaring a method, but you aren't defining it for the parent
+  - protected abstract int agePriority();
+- If a class has an abstract method, it become abstract, so you have to label the class as abstract because it isn't fully defined
+  - Cannot call new on an abstract class
+  - Conveying intent of not wanting a parent object directly
+- An abstract class only has purpose in being a super class.
+- final: function keyword, saying a child CANNOT override that method
+  - A class can be tagged final if you can't inherit from that class
+
+
+## Interface Inheritance
+A class that only has abstract method definitions. A datatype that a class can implement. Polymorphism without inheriting code.
+
+Keyword is "implement" the interface. Promising to have all the interface methods. Can implement as many interfaces as you want.
+
+public class Person extends whatever implements Moveable, Comparable, Runnable {}
+
+Declaration: public interface Name { void go(); } 
+- Includes return and paramater types, but no other keywords, no need to call abstract
+
+An interface can extend from another interface - public interface MyInterface extends Moveable
+
+To get rid of any duplication in code, you can introduce an abstract class between the interface and the full classes to implement any shared code.
+
 
 ## Enumeration
 A different type of Java file. Example:
@@ -155,5 +220,300 @@ Tips for default or incomplete construction:
 
 You can call one constructor from another one by using the call "this(input)".
 
+## Records
+Sometimes, you have a class that only holds data, but doesn't really implement any meaningful algorithms. Easily written or generated.
 
+To simplify this, you can use a record. 
+
+Example: public record Pet(int id, String name, String type) {}
+
+... and that's all you need. Java will fill in the dots for getter and setter methods, hash codes, equals, etc.
+
+Record objects are immutable. Getter methods don't have 'get' in it - instead of .getName(), it's just .name(). You can add in additional methods to the record, but they can't change any of the attribute values.
+
+## Copying Objects
+
+Shallow copy - creates a new object of the same class, but doesn't copy the variable values, it just links them. If you modify one of the variables in the previous object, then it will modify the copy as well.
+
+Deep copy - creates a copy of the object, and creates a copy of each nested variable.
+
+You don't need to copy any immutable objects, becuase you don't have to worry about someone messing up the original value.
+
+Writing classes to support copying: 
+- Method 1: call new and pass in the original object to the constructor, constructor example is "public Course(Course other) {setName(other.name)}
+- Method 2: call object.clone() - official method in java, clone() method belongs to Object class, clone() calls copy constructor. You don't need to remember which object type it is to copy it.
+- You need to copy each variable as well if they aren't immutable. If the variables are immutable, you can just set the value.
+- When creating a deep copy of a list, for example, you need to copy and add in each element from the original list.
+- Default Java clone only makes a shallow copy
+
+## Inner Classes
+Purpose: Limiting scope, hiding information from external calls
+
+If tagged as static, nested class doesn't have any special access to variables or methods. But if it isn't tagged as static, it can access any variables or methods of that object. This means you don't have to pass in additional values when creating the class, it can access your array already. If you don't want to pass method parameters, you can move the inner class to inside a method - called a local class. Where and how you define it determines which variable scope it has. If the class only gets used/called once, you can make it anonymous (without a name) by doing "return new SuperClass() {all the code}". What is the point of an anonymous function? If you really only use it in one place, don't bother giving it a name. These are more like Event Handler mini functions.
+
+## Generic classes
+
+Similar to a Template in C++, useful in strongly typed languages, where you have to know what kind of variable everything is. For example, ArrayList is a generic type, which has only 1 implementation, but you have to pass in a type. 
+
+Example:
+```
+public class Pair<T, U> {
+  private T value1;
+  private U value2;
+
+  public Pair(T value1, U value2) {
+    this.value1 = value1;
+    this.value2 = value2;
+  }
+
+  public T getValue1() {
+    return value1;
+  }
+}
+```
+
+However, when you pass in the types, they have to be objects, not primitives. 
+
+Instantiating a Generic Class: Pair<String, Integer> pair = new Pair<>("Hello", 123), can also be written as var pair = new Pair<String, Integer>("Hello", 123), where you can use 'var' to infer the variable type. 
+
+Inheritance - can use inheritance to fill in type parameters with hardcoded value types.
+
+public class StringPair extends Pair<String, String>
+
+public class KeyValuePair<V> extends Pair<String, V>
+
+Generic interfaces - can also be used to fill in type parameters. Can be used to pass in function objects, called "first class functions", where you can declare a variable, and store a function in it. Treating functions as a piece of data. 
+
+Wildcards - use a special syntax of "?" to expand acceptable types. Instead of List<T>, you can make it include additional object types using List<? super T> or List<? extends T> to extend it to either super classes of type T, or any subclasses of type T. 
+
+# Lambda Expressions
+
+Anonymous functions, in-line, can be passed in as parameters, or stored as variables.
+
+A functional interface is an interface that only has one method on it. Instead of writing a class, you can use a lambda function.
+
+Syntax: (Parameter list) -> {function body}
+- If only one parameter, can leave off parentheses
+- If only one expression in the function body, it doesn't need curly braces, and it doesn't need a 'return' statement
+
+How does the compiler deal with Lambda functions?
+- Needs to convert a function to the parameter type called by the object method
+- Gets converted to an anonymous inner class
+- Converts concise syntax to verbose syntax
+- Because of that, the parameter type NEEDS to be a functional interface, so that the compiler knows exactly which method to implement with the lambda
+
+Functional Interfaces
+- Runnable, method void run()
+- Callable<V>, method V call()
+- Comparable<T>, method in compare(T, T)
+- Predicate, method bool test(input)
+
+Creating function variables - store the lambda in a variable, and then you can call it multiple times in different places. You can call the variable like it's a function (although the syntax is more like an object method).
+
+A lambda function can also be replaced with a method reference if the function really just calls another built in function. You can change x -> System.out.println(x) to System.out::println. You can pass in method names, or the 'new' constructor.
+
+# Error Handling
+
+Causes of Errors: 
+- Bugs in a code - null pointers, etc, just fix it
+- Bad input given
+- Out of memory
+- Runtime stack overflow
+- Bad internet connection
+
+Java forces you to deal with erorrs - you either have to handle it, or advertise the fact that you didn't. If you don't deal with an error, it will kill your code.
+These rules do not apply to Errors or RuntimeExceptions.
+
+Handle: 
+
+An exception will be detecting way down low in the operating system. That system will gather information about it, and 'throws' the exception upward until a program says "I know what to do about it". Adding in handling lets your program deal with it before the terminal yells at you, and being able to gracefully exit your code.
+
+```
+try {regular code}
+catch (Exception ex) {error handling code}
+catch (otherExceptionType ex) {handling another error}
+continuation code
+```
+
+Declare:
+
+Advertise the fact that you didn't handle any exceptions. Lets the programmer know what exceptions may be thrown from a certain function or subfunction. 
+```
+public void method()
+    throws Exception {}
+```
+
+Details:
+
+You can only throw an object. Throwable --> Exception and Error
+- Error is catastrophic, something you're program won't recover from, so you might as well ignore it.
+- Exceptions --> IOException, InvalidURL
+  - These are the ones that Java will check, so you need to have exceptions for these
+- Exceptions --> RuntimeException --> NullPointer, IndexOutOfBounds
+  - RuntimeExceptions are not checked by Java - things that are your fault, have to do with bugs, things you should just fix
+  - Too common to bother enforcing, because really anything could call it
+
+Common Errors and General advice:
+- An object constructor or method can throw an error
+- Main methods probably shouldn't throw an error, or else it's a bad program
+- Can use ex.printStackTrace()
+- Multiple catch blocks for different errors
+- Even if you don't do anything useful, and you just end the program, you should exit gracefully and provide useful information to the user
+- Use a finally clause (which happens after both try and catch) to do anything that needs to happen every time, something you don't want to accidentally skip, like closing a file, or deallocating other resources
+- Java added try with resource: try (open scanner) {} which lets Java write the finally block automatically
+
+Creating custom exception types: public class CustomName extends Exception {imitate normal exception methods}
+
+# Collections
+
+When regular arrays do not suffice; Collections can only store object references; implements many useful associated algorithms.
+
+Types:
+- Collection --> List, Set (--> SortedSet --> NavigableSet), Queue (--> Deque)
+  - Add, remove, length, iterator methods
+- Map --> SortedMap --> NavigableMap
+  - Key-Value pairs
+- Iterator --> ListIterator
+  - Iterates through values in a Collection
+ 
+Lists
+- Ordered, accessed by index
+- ArrayList, LinkedList
+- Uses a more powerful iterator called a ListIterator
+
+Set 
+- Unordered, no duplicate values
+- HashSet (need a good Hash/Equal methods), TreeSet (needs comparability), LinkedHashSet
+
+Queue
+- Holding elements in an order, can only return one element, no random access
+- add, peek, remove
+- ArrayDeque, LinkedList, Stack, PriorityQueue
+
+Deque
+- Double ended queue, insert/remove both ends
+- ArrayDeque, LinkedList
+
+Stack 
+- Don't actually use the Java stack, use the Deque
+
+Maps
+- key-value pairs, put, get, contains, remove, key/value/entry sets
+- HashMap, TreeMap, LinkedHashMap
+
+Iterable
+- Can iterate over collections
+- Use for (Object o : collection)
+
+## Equality Checking
+Default Java is to compare objects by identity/address. You have to be careful what 'equals' means for two different collections.
+
+## Sorted Collections
+
+TreeSet, TreeMap, PriorityQueue
+
+Elements in a sorted collection need to be comparable - there must be a working >, <, and == methods
+
+Implementation:
+
+```
+public class TimeOfDay implements Comparable<TimeOfDay> { ...
+  @Override
+  public int compareTo(TimeOfDay timeOfDay) {
+    int result = Integer.compare(hour, timeOfDay.hour);
+    if (result == 0) {
+      result = Integer.compare(minute, timeOfDay.minute);
+    }
+    return result;
+  } ...
+}
+```
+
+A Compare function returns a negative value if you are smaller, 0 if you are equal, and positive if you are larger. Most smaller classes have a built in compare method. 
+
+What happens if you modify an object that is currently in a tree? It's sort order could change, and now it's in the wrong place, and now your tree is broken. If you want to change an object, you must take it out, then change it, then put it back in. If it's not in the right place, then your tree can't find it, and may say it's not in there when it is. If it's in a Hash, then if you change it it's Hash will change, and now you can't access it again.
+
+# I/O
+
+File Class - wrapper around a file path, exists(), createNewFile(), delete()
+
+## Streams
+Low level read in. Takes in bytes or characters. InputStream takes in bytes or binary, which are video, image, etc, but NOT text. Reader and Writer read and write characters, which is text formatted data. Processes data sequentially. 
+
+Data Sources
+- File
+- Keyboard input
+- Socket/network connection
+- Pipes
+- URL pages
+
+Transformations
+- Decompress/compress data - like a zip file
+- Decryption/encryption
+- Compute a "digest" - run a hash to get a fingerprint of the file
+- Byte counting
+- Line counting
+- Buffering - collect a chunk instead of just a single byte
+
+Transformations are applied as wrapper classes that take the data file as input. Work like a linked list of streams.
+
+DataOutputStream class lets you write binary-formatted data values
+
+Reader/Writer interfaces are basically identical to the InputStream/OutputStream, but apply to text and characters.
+
+Wrapper classes
+- PrintWriter lets you write text-formatted data values (tokens)
+- Scanner lets you read text-formatted data tokens
+
+Use classes InputStreamReader or OutputStreamWriter to convert a stream to a reader
+
+## Scanner
+
+Methods
+- hasNext()
+- next()
+- nextInt(), nextFloat(), etc
+- useDelimiter(regex telling it what the token divider is - white space)
+  - Use to skip comments
+  - Overrides the delimeter - can only have one at a time, so use | in the regex if you want multiple
+
+## In addition...
+
+Files
+- Class that lets you readAllLines and get a List<String> back
+
+RandomAccessFile
+- Ability to access information without going sequentially
+- file pointer represents current location
+- ability to move pointer to wherever you want, skipBytes(int), seek(long)
+- Can read or write from where the pointer is
+
+# JSON
+
+Java-Script Object Notation
+
+Specific format for sharing data. Text-based, Java-Script objects. Holds strings, numbers, boolean, array, objects, and null. Each object is like a dictionary, a set of key-value pairs. Like holding all the attributes of a python/java object. Nesting of lists and objects. Textual representation of a data tree. 
+
+## I/O
+Libraries in Java that are structured to both parse and create Json files.
+
+Stream Parser
+- Tokenizers that return one token at a time from the Json file
+- Tokens are things like "begin object", "Key Name", "end object"
+- Useful for pulling out one peice of data in the middle, or only when you want to read some of it
+
+DOM
+- Converts JSON text to an in-memory tree data structure
+- Traverse the DOM to extract information
+- Document Object Model (tree)
+
+Serializer
+- Going from Java object to Json file string
+- Deserialize - take Json file string and turn it into a Java object
+- Easy way to store our objects elsewhere
+- Gson library - Gson gson = GsonBuilder().setPrettyPrint().create(); String jsonString = gson.toJson(java object);
+- Gson gson = new Gson(); Object object = gson.fromJson(Reader, Object.class);
+- Gson struggles with interfaces and inheritance - need to use a TypeAdapter
+  - gson.registerTypeAdapter(Object.class, new TypeAdapter)
+  - Override public Object read(JsonReader) which takes in the stream parser, and then parse it yourself
 
