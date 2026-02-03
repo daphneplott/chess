@@ -35,8 +35,16 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-
         board.put(position,piece);
+    }
+
+    /**
+     * Removes a chess piece from the board
+     *
+     * @param position denotes which place to remove it from
+     */
+    public void removePiece(ChessPosition position) {
+        board.remove(position);
     }
 
     /**

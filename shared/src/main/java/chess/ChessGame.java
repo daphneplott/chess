@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -10,15 +11,19 @@ import java.util.Collection;
  */
 public class ChessGame {
 
-    public ChessGame() {
+    private TeamColor teamTurn;
+    private ChessBoard board = new ChessBoard();
 
+    public ChessGame() {
+        board.resetBoard();
+        teamTurn = TeamColor.WHITE;
     }
 
     /**
      * @return Which team's turn it is
      */
     public TeamColor getTeamTurn() {
-        throw new RuntimeException("Not implemented");
+        return teamTurn;
     }
 
     /**
@@ -27,7 +32,7 @@ public class ChessGame {
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        throw new RuntimeException("Not implemented");
+        teamTurn = team;
     }
 
     /**
@@ -36,6 +41,18 @@ public class ChessGame {
     public enum TeamColor {
         WHITE,
         BLACK
+    }
+
+
+    /**
+     * Determines if a particular move is valid.
+     * A move is NOT valid if doing so would leave the King able to be checked.
+     *
+     * @param move is the move in question, piece gives info about the piece moving
+     * @return True/False depending on if the move is valid.
+     */
+    public boolean isValid(ChessMove move, ChessPiece piece) {
+        throw new RuntimeException("Not Implemented");
     }
 
     /**
@@ -47,6 +64,9 @@ public class ChessGame {
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         throw new RuntimeException("Not implemented");
+        // Get the piece. If no pice, return null.
+        // Get all possible moves for that piece.
+        // Call isValid on each move. If valid, add to a new set.
     }
 
     /**
@@ -57,6 +77,10 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         throw new RuntimeException("Not implemented");
+        // Get the piece in that position
+        // Calls isValid to check if move is valid
+        // If valid, remove the piece from start position, and put it in the end position.
+        // If it has a promotion, add THAT piece there instead.
     }
 
     /**
@@ -67,6 +91,10 @@ public class ChessGame {
      */
     public boolean isInCheck(TeamColor teamColor) {
         throw new RuntimeException("Not implemented");
+        // For all pieces in other team, generate all valid moves.
+        // If any of those moves equal where the King is, return true.
+        // I guess you'll have to 'find' the King when you iterate through the board.
+        // Actually, use a set implementation, and just add in the King's position to "possible moves"
     }
 
     /**
@@ -77,6 +105,8 @@ public class ChessGame {
      */
     public boolean isInCheckmate(TeamColor teamColor) {
         throw new RuntimeException("Not implemented");
+        // Ask - is in check?
+        // See if I have any valid moves
     }
 
     /**
@@ -88,6 +118,8 @@ public class ChessGame {
      */
     public boolean isInStalemate(TeamColor teamColor) {
         throw new RuntimeException("Not implemented");
+        // Ask - is in check?
+        // See if I have any valid moves
     }
 
     /**
@@ -96,7 +128,7 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        throw new RuntimeException("Not implemented");
+        this.board = board;
     }
 
     /**
@@ -105,6 +137,20 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented");
+        return this.board;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessGame chessGame = (ChessGame) o;
+        return teamTurn == chessGame.teamTurn && Objects.equals(board, chessGame.board);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(teamTurn, board);
     }
 }
