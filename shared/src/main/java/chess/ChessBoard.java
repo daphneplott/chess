@@ -1,7 +1,6 @@
 package chess;
 
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.*;
 
 
 /* Notes to self: This object needs to represent the functionality of the board, representing like the physical object.
@@ -55,8 +54,11 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-
         return board.get(position);
+    }
+
+    public Set<Map.Entry<ChessPosition, ChessPiece>> getEntries() {
+        return board.entrySet();
     }
 
 

@@ -1,7 +1,6 @@
 package chess;
 
-import java.util.Collection;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -53,6 +52,8 @@ public class ChessGame {
      */
     public boolean isValid(ChessMove move, ChessPiece piece) {
         throw new RuntimeException("Not Implemented");
+        // Preview the move, and then ask if THAT board is in check.
+
     }
 
     /**
@@ -63,10 +64,19 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
-        // Get the piece. If no pice, return null.
+        // Get the piece. If no piece, return null.
         // Get all possible moves for that piece.
         // Call isValid on each move. If valid, add to a new set.
+        ChessPiece piece = board.getPiece(startPosition);
+        if (piece == null) {return null;}
+        var possibleMoves = piece.pieceMoves(board,startPosition);
+        ArrayList<ChessMove> valid = new ArrayList<>();
+        for (ChessMove move : possibleMoves) {
+            if (isValid(move,piece)) {
+                valid.add(move);
+            }
+        }
+        return valid;
     }
 
     /**
@@ -76,11 +86,53 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
         // Get the piece in that position
         // Calls isValid to check if move is valid
         // If valid, remove the piece from start position, and put it in the end position.
         // If it has a promotion, add THAT piece there instead.
+        ChessPiece piece = board.getPiece(move.getStartPosition());
+        if (! isValid(move,piece)) {throw new InvalidMoveException();}
+        board.removePiece(move.getStartPosition());
+        if (move.getPromotionPiece() == null) {
+            board.addPiece(move.getEndPosition(),piece);
+        }
+        board.addPiece(move.getEndPosition(), new ChessPiece(piece.getTeamColor(),move.getPromotionPiece()));
+        if (teamTurn.equals(TeamColor.WHITE)) {
+            setTeamTurn(TeamColor.BLACK);
+        } else {
+            setTeamTurn(TeamColor.WHITE);
+        }
+    }
+
+    /**
+     * Refactor for calling isInCheck
+     *
+     * @param teamColor denotes the team color in question
+     * @param board denotes the chessboard it should look at
+     * @return whether that colored king is in check
+     */
+    private boolean isInCheck(TeamColor teamColor, ChessBoard board) {
+        // For all pieces in other team, generate all valid moves.
+            // ACTUALLY ... I think it might just be all possible moves.
+            // It doesn't matter if moving would put your king in danger if that move takes the other king.
+            // ahhhh... infinite recursion avoided.
+        // If any of those moves equal where the King is, return true.
+        // I guess you'll have to 'find' the King when you iterate through the board.
+        ArrayList<ChessPosition> possibleMoves = new ArrayList<>();
+        ChessPosition myKing = new ChessPosition(1,1);
+        for (Map.Entry<ChessPosition, ChessPiece> entry : board.getEntries()) {
+            ChessPosition position = entry.getKey();
+            ChessPiece piece = entry.getValue();
+            if (piece.getTeamColor() != teamColor) {
+                Collection<ChessMove> someMoves = piece.pieceMoves(board,position);
+                for (ChessMove move : someMoves) {
+                    possibleMoves.add(move.endPosition);
+                }
+            } else if (piece.getPieceType() == ChessPiece.PieceType.KING) {
+                myKing = position;
+            }
+        }
+        return possibleMoves.contains(myKing);
     }
 
     /**
@@ -90,11 +142,7 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
-        // For all pieces in other team, generate all valid moves.
-        // If any of those moves equal where the King is, return true.
-        // I guess you'll have to 'find' the King when you iterate through the board.
-        // Actually, use a set implementation, and just add in the King's position to "possible moves"
+        return isInCheck(teamColor,this.board);
     }
 
     /**
