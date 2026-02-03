@@ -50,7 +50,7 @@ public class ChessGame {
      * @param move is the move in question, piece gives info about the piece moving
      * @return True/False depending on if the move is valid.
      */
-    public boolean isValid(ChessMove move, ChessPiece piece) {
+    private boolean isValid(ChessMove move, ChessPiece piece) {
         // Preview the move, and then ask if THAT board is in check.
         ChessBoard preview = board.clone();
         preview.removePiece(move.getStartPosition());
@@ -97,7 +97,11 @@ public class ChessGame {
         // If valid, remove the piece from start position, and put it in the end position.
         // If it has a promotion, add THAT piece there instead.
         ChessPiece piece = board.getPiece(move.getStartPosition());
-        if (! isValid(move,piece)) {throw new InvalidMoveException();}
+        if (piece == null) {throw new InvalidMoveException();}
+        if (piece.getTeamColor() != teamTurn) {throw new InvalidMoveException();}
+        var possibleMoves = validMoves(move.getStartPosition());
+        if (!possibleMoves.contains(move)) {throw new InvalidMoveException();}
+
         board.removePiece(move.getStartPosition());
         if (move.getPromotionPiece() == null) {
             board.addPiece(move.getEndPosition(),piece);
