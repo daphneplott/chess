@@ -51,9 +51,15 @@ public class ChessGame {
      * @return True/False depending on if the move is valid.
      */
     public boolean isValid(ChessMove move, ChessPiece piece) {
-        throw new RuntimeException("Not Implemented");
         // Preview the move, and then ask if THAT board is in check.
-
+        ChessBoard preview = board.clone();
+        preview.removePiece(move.getStartPosition());
+        if (move.getPromotionPiece() == null) {
+            preview.addPiece(move.getEndPosition(),piece);
+        } else {
+            preview.addPiece(move.getEndPosition(), new ChessPiece(piece.getTeamColor(), move.getPromotionPiece()));
+        }
+        return !isInCheck(piece.getTeamColor(), preview);
     }
 
     /**
@@ -95,8 +101,9 @@ public class ChessGame {
         board.removePiece(move.getStartPosition());
         if (move.getPromotionPiece() == null) {
             board.addPiece(move.getEndPosition(),piece);
+        } else {
+            board.addPiece(move.getEndPosition(), new ChessPiece(piece.getTeamColor(), move.getPromotionPiece()));
         }
-        board.addPiece(move.getEndPosition(), new ChessPiece(piece.getTeamColor(),move.getPromotionPiece()));
         if (teamTurn.equals(TeamColor.WHITE)) {
             setTeamTurn(TeamColor.BLACK);
         } else {

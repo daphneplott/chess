@@ -108,4 +108,11 @@ public class ChessBoard {
     public String toString() {
         return board.toString();
     }
+
+    @Override
+    public ChessBoard clone() {
+        ChessBoard clone = new ChessBoard();
+        clone.board.putAll(this.board);
+        return clone;
+    }
 }
