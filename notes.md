@@ -517,3 +517,45 @@ Serializer
   - gson.registerTypeAdapter(Object.class, new TypeAdapter)
   - Override public Object read(JsonReader) which takes in the stream parser, and then parse it yourself
 
+# Software Design
+
+Structuring and organizing how your pieces work together. How can we create software, and do it well?
+
+Goals:
+- Works
+- Easy to understand, debug, and maintain
+- Holds up well under changes
+
+General principles
+- Don't repeat yourself!
+- Decomposition of parts
+- Make each piece do one thing, and does it well
+
+### Principle 1 - Design is Inherently Iterative
+You generally don't know enough to be able to design everything all at once. So, you can design a piece of it, then code it, find a problem, and redesign again. 
+Designing everything first won't work out, and trying to just code without design is a bad idea. So, you need to iterate through both steps together.
+
+### Principle 2 - Abstraction
+Abstraction is a tool for dealing with complexity. You can use a car without knowing how everything works under the hood. In coding, classes, functions, and similar constructs are abstractions. Built in languages have a lot of their own abstractions, but you often need to build a lot of your own so that they can be well applied. Create classes to model real-life concepts, but then make that class an abstractions - give it a nice user interface wihout the user worrying about how exactly it works. Real world objects can be complicated, so you have to be judicious in your choices of which aspects of those objects are actually useful for your specific implementation. 
+
+### Principle 3 - Good Naming
+Descriptive, follow conventions. Classes should be nouns, methods should be verbs/verb phrases, or named after what they return. Use a thesaurus if you need to.
+
+### Principle 4 - Single Responsibility
+Each class has ONE and only one responsibility. You shouldn't be going back to change how a class works, or else it probably doesn't work right. A class can either do an action, or store data, but it should represent a single concept. Methods and functions should be similar, and they should perform one task. Your classes and functions should be easy to name, because they only do one thing. If a function or class really needs to do multiple things, then you should break it up, and delegate to helper functions/classes
+
+### Principle 5 - Decomposition
+Decomposition breaks complex problems into smaller and smaller pieces until you get to pieces that can be directly solved. Once you've solved all the subpieces, you can roll them up together to solve the larger pieces. With a larger piece, you need to break it into what responsibilities it has, and what concepts, ideas, and tasks it needs to do. The pieces should adhere to the single responsibility principle. Size of code classes or files is a good indication that it's too big. This process is used to decide which abstractions to use. System - subsystem - packages - classes - methods.
+
+### Principle 6 - Algorithm and Data Structure Selection
+No amount of abstraction will hide fundamentally flawed algorithms or data structures. Your program needs to be fast. You need to decide what you need to do with your data, so that you can choose the right structures.
+
+### Principle 7 - Minimize Coupling
+Code should be shy. The less classes that know each other the better. Minimize the number of other classes that a class interacts with or knows about. Low coupling reduces ripple effects when you change some piece of one code. You still need coupling so that your program will work, but don't include a dependency unless it's really necessary.
+
+### Principle 8 - Encapsulation / Information Hiding
+A class should hide its internal implementation as much as possible. Not all of the class needs to be seen, and if you hide as much as possible, then it makes it easier to use, as well as more protected against misuse or coupling. Private variables and methods can be changed without affecting any other code. You can also use naming conventions to hide implementation details (and make sure not to use naming that betrays those internal details). However, if a class is inherently tied to an implementation, use it in the name to be descriptive. You can use an interface to hide specific implementations, and declare variables as interface types to prevent improper use. 
+
+### Principle 9 - Avoid Code Duplication
+You shouldn't use copy-paste programming, because if you need to change it, you need to change all of those copies. Copied code is usually pretty important, so you may be missing an important abstraction. Common code can be factored into a separate method or class, or placed in a common superclass. 
+
