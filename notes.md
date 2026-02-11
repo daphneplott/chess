@@ -559,3 +559,47 @@ A class should hide its internal implementation as much as possible. Not all of 
 ### Principle 9 - Avoid Code Duplication
 You shouldn't use copy-paste programming, because if you need to change it, you need to change all of those copies. Copied code is usually pretty important, so you may be missing an important abstraction. Common code can be factored into a separate method or class, or placed in a common superclass. 
 
+# HTTP
+
+Client connection with server: client initiates communication with the server, establishes a connection that allows data to be sent back and forth. In order to connect, the client and server machines each need an IP address, and the client needs to know the server's IP address to connect. Instead of using IP addresses in most cases, we normally use a domain name and the Domain Name Service to convert a domain name into an IP address. A server machine will probably be running multiple programs through the internet, so an IP address is not enough information. Each server program communicates on a 'port' number, so the client must know that port number to connect. A default HTTP port is 80, HTTPS is 443, email is 25, SSH is 22.
+
+HTTP Get Request: Needs a URL - Uniform Resource Locator - Protocol, Domain name, port number (optional, falls back to default protocol ports), path string. When you type in a url into a browser, it makes a connection, then constructs an HTTP request, which looks like: 
+- GET (request type) URL path HTTP/1.1 (HTTP version)
+- (Headers, key/value pairs) Accept: types \n Accept-Encoding: types \n User-Agent: browser information
+A GET response looks like:
+- Version, status code, status code explanation
+- Headers
+- Empty line
+- Response body
+
+HTTP Post Request: Mostly how forms works. Request has a method, path, version, header, and request body. A post has data appended to it. The response will also have body data.
+
+Request types: GET (get data), POST (give new data), PUT (update resource), DELETE (delete information)
+
+Status codes: 200 - good, 400 - client error/bad request, 500 - server error, 300 - redirect
+
+## Web API
+A Web API uses things that look like URLs and HTTP requests to call functions over the web.
+
+GET request
+- Get /function_name, maybe one header is Authorization: Auth-Token
+- Returns the same sort of response with a response body
+
+POST request
+- Sends input parameters in request body as a JSON object
+- Needs to be a post request if you want to send data
+- Use response status code to raise errors
+
+## Curl
+Used for debugging web APIs that don't use the browser. Command line tool to create and send HTTP requests. Available, shareable, good for automation. 
+
+Example: curl byu.edu - returns response body, such as the actual home page for the byu website in html. Defaults to GET, can change using -X (type). Can use -v to show more information. Can use -H to specify headers, -d for request body data or --data-binary to put in request body data from file, -o to dump output response in a file. 
+
+Using curl requests with the API:
+- curl -X POST http://localhost:8080/session -d '{"username": "me", "password": "1234"}
+- curl -X GET http://localhost:8080/game -H 'Authorization: auth-token'
+- curl -X DELETE http://localhost:8080/session -H 'Authorization: auth-token'
+
+Instead of using curl, there are some other interfaces you can use, such as postman, which you can use online, or in VS code.
+
+
