@@ -602,4 +602,95 @@ Using curl requests with the API:
 
 Instead of using curl, there are some other interfaces you can use, such as postman, which you can use online, or in VS code.
 
+## Web Server
+
+### Javalin 
+
+Javalin.create()
+  .get("/hello", ctx -> ctx.result("Hello BYU!")
+  .start(8080)
+
+--- Similarly can be ...
+
+public class AlternateSimpleHelloBYUServer {
+  public static void main(String[] args) {
+    Javalin.create()
+      .get("/hello", AlternateSimpleHelloBYUServer::handleHello)
+      .start(8080)
+  }
+
+  private static void handleHello(Context ctx) {
+    ctx.result("Hello BYU!")
+  }
+}
+
+--- Similarly can be ...
+
+public class Alternate2SimpleHelloBYUServer {
+  public static void main(String[] args) {
+    Javalin.create()
+      .get("/hello", new HelloHandler())
+      .start(8080)
+  }
+
+  private static Class HelloHandler implments Handler {
+    @Override
+    public void handle(Context ctx) throws Exception {
+      ctx.result("Hello BYU!")
+    }
+  }
+}
+
+Things necessary for project 3:
+- Should include a port number as the first arg, or a default port
+- use createHandlers(javalinServer) to move .get into function which runs as javalinServer.get()
+- Put Handlers into their own files
+
+What does the Server return:
+- HTTP version, status code, reason
+- Headers
+- Content
+
+Creating the context/response in a handler:
+- context.json("{object}")
+- context.status(number)
+- context.contentType('application/json')
+- context.header(name, value)
+- context.result('{message: Hello BYU!}')
+- body, headerMap, header, path, result, json, header, contentType, status
+
+### Handlers
+
+Routes - Url with a handler attached to it
+
+Before and After Handlers
+- Something called for every request
+- Authentication
+- Making sure the response bodies are full
+- Logging or debugging
+- If a Before handler throws an error, it won't proceed to other handlers
+- Use javalin.before()
+- Can take an optional pattern to restrict routes to which they are applied: before("/protected/*" ...)
+- Additionally have after handlers
+
+Extracting information from url:
+- get("/hello/<name>", context -> {return "Hello: " + context.pathParam("name");})
+- Use {} to match only one segment of the url
+- Use <> to math the entire rest of the url
+- Wildcard parameter: use * to match all, without caring what the value is
+
+### Error Handling
+
+Errors must be caught by the handler. Can use and catch exceptions. Can use the return value of the function to indicate if there was an error down the line. Can use the 'result' class to package the errors. Make sure any exceptions that are thrown (or percolated) are actually useful for each of those classes. Each layer of code should throw it's own exception type. Let the DAO be the only one to throw a DataAccessException, and let the Service throw something else, even through percolating.
+
+Javalin
+- javalin.exception(Exception.class, (e, ctx) -> {handle exception, put info into context})
+- javalin.error(404, ctx -> {process erorr consistently across server})
+
+### Serving Static Files
+
+Allows a website to actually work, and be able to be visited. Need all the information to be together. Can use a resources folder to hold the html, css, js, images, data, icons, etc. Need to tell the server where the webfiles are. Files are called static because they aren't changing.
+
+javalin.create(config -> config.staticFiles.add("folder name"))
+
 
