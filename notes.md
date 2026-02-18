@@ -694,3 +694,45 @@ Allows a website to actually work, and be able to be visited. Need all the infor
 javalin.create(config -> config.staticFiles.add("folder name"))
 
 
+# Quality Code
+
+Software design is both engineering and an art.
+
+Good principles:
+- helpful naming
+- formatting/indentation/whitespace
+- comments, docstrings, explanations
+- short methods or subfunctions
+- decomposition
+
+Naming conventions
+- Classes explain what they represent
+- functions explain what they do
+- Packages are all lower case, reverse of domain name
+- Classes use CamelCase with front capitalization
+- Methods and variables are camelCase with no front capitalization
+- Constants are ALL_CAPS
+
+Readability
+- Good naming
+- Line length is not too long
+- Comments (but not unnecessary ones)
+- Put separate if conditions on separate lines
+- Line things up well when you wrap lines
+- Use proper indentation
+- Good and consistent use of white space - newlines, indentation, spaces between variables or expressions
+- Curly brace or parantheses placement
+- Subexpressions or submethods
+- Don't write code that never gets used
+
+# Unit Testing
+
+Positive test: make sure it works when given valid input. Negative test: make sure it fails or errors when it ought to.
+Test Driven Development is when you write all of your tests before you actually write the code. This helps the coder understand the program better, and help them to focus on what it is supposed to look like. Need to test that each piece works the way that it should before adding it to the system, and then testing each smaller assembly, and so on for each and every step.
+
+Unit testing focuses most on the classes, sometimes on certain methods. After unit testing you need integration testing and then system testing. But the person writing the code is in charge of the unit tests. 
+
+Unit tests are methods that compare a calculated result to an expected result. Each method should have their own tests. Unit tests can be run and rerun frequently so that you know if any new code you've introduced has caused anything to fail. Testing old code is called regression testing.
+
+A test driver is a program that runs all the tests, and gives you a report. You can use the framework Junit to create a test driver. Use Assertions.assertTrue(stuff), or assertEquals, assertFalse, assertThrows, assertArrayEquals, assertDoesNotThrow, assertNotEquals, assertHttpOk. Use decorator @Test above test cases, and don't put it above supporting methods. The tests should be nested inside a SomethingTest class. A lot of tests will have similar setup or objects, wo you can declare the variables in the class, and then tag a @BeforeAll method that can create all those objects, and an @AfterAll method that can clean up those objects (such as a server). Use @BeforeEach and @AfterEach to run in between each test, and potentially reset information.
+
