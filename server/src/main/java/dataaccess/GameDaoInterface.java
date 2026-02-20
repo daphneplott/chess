@@ -1,20 +1,21 @@
 package dataaccess;
 
 import chess.ChessGame;
-import model.AuthData;
 import model.GameData;
+
+import java.util.ArrayList;
 
 public interface GameDaoInterface {
 
     void createGame(GameData game);
 
-    GameData getGame(int gameID);
+    GameData getGame(int gameID) throws DataAccessException;
 
-    void updateGame(ChessGame.TeamColor playerColor, int gameID);
+    void updateGame(ChessGame.TeamColor playerColor, String username, int gameID) throws DataAccessException;
 
-    void deleteGame(int gameID);
+    void deleteGame(int gameID) throws DataAccessException;
 
     void deleteAllGames();
 
-    void listGames();
+    ArrayList<GameData> listGames();
 }
