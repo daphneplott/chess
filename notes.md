@@ -517,3 +517,222 @@ Serializer
   - gson.registerTypeAdapter(Object.class, new TypeAdapter)
   - Override public Object read(JsonReader) which takes in the stream parser, and then parse it yourself
 
+# Software Design
+
+Structuring and organizing how your pieces work together. How can we create software, and do it well?
+
+Goals:
+- Works
+- Easy to understand, debug, and maintain
+- Holds up well under changes
+
+General principles
+- Don't repeat yourself!
+- Decomposition of parts
+- Make each piece do one thing, and does it well
+
+### Principle 1 - Design is Inherently Iterative
+You generally don't know enough to be able to design everything all at once. So, you can design a piece of it, then code it, find a problem, and redesign again. 
+Designing everything first won't work out, and trying to just code without design is a bad idea. So, you need to iterate through both steps together.
+
+### Principle 2 - Abstraction
+Abstraction is a tool for dealing with complexity. You can use a car without knowing how everything works under the hood. In coding, classes, functions, and similar constructs are abstractions. Built in languages have a lot of their own abstractions, but you often need to build a lot of your own so that they can be well applied. Create classes to model real-life concepts, but then make that class an abstractions - give it a nice user interface wihout the user worrying about how exactly it works. Real world objects can be complicated, so you have to be judicious in your choices of which aspects of those objects are actually useful for your specific implementation. 
+
+### Principle 3 - Good Naming
+Descriptive, follow conventions. Classes should be nouns, methods should be verbs/verb phrases, or named after what they return. Use a thesaurus if you need to.
+
+### Principle 4 - Single Responsibility
+Each class has ONE and only one responsibility. You shouldn't be going back to change how a class works, or else it probably doesn't work right. A class can either do an action, or store data, but it should represent a single concept. Methods and functions should be similar, and they should perform one task. Your classes and functions should be easy to name, because they only do one thing. If a function or class really needs to do multiple things, then you should break it up, and delegate to helper functions/classes
+
+### Principle 5 - Decomposition
+Decomposition breaks complex problems into smaller and smaller pieces until you get to pieces that can be directly solved. Once you've solved all the subpieces, you can roll them up together to solve the larger pieces. With a larger piece, you need to break it into what responsibilities it has, and what concepts, ideas, and tasks it needs to do. The pieces should adhere to the single responsibility principle. Size of code classes or files is a good indication that it's too big. This process is used to decide which abstractions to use. System - subsystem - packages - classes - methods.
+
+### Principle 6 - Algorithm and Data Structure Selection
+No amount of abstraction will hide fundamentally flawed algorithms or data structures. Your program needs to be fast. You need to decide what you need to do with your data, so that you can choose the right structures.
+
+### Principle 7 - Minimize Coupling
+Code should be shy. The less classes that know each other the better. Minimize the number of other classes that a class interacts with or knows about. Low coupling reduces ripple effects when you change some piece of one code. You still need coupling so that your program will work, but don't include a dependency unless it's really necessary.
+
+### Principle 8 - Encapsulation / Information Hiding
+A class should hide its internal implementation as much as possible. Not all of the class needs to be seen, and if you hide as much as possible, then it makes it easier to use, as well as more protected against misuse or coupling. Private variables and methods can be changed without affecting any other code. You can also use naming conventions to hide implementation details (and make sure not to use naming that betrays those internal details). However, if a class is inherently tied to an implementation, use it in the name to be descriptive. You can use an interface to hide specific implementations, and declare variables as interface types to prevent improper use. 
+
+### Principle 9 - Avoid Code Duplication
+You shouldn't use copy-paste programming, because if you need to change it, you need to change all of those copies. Copied code is usually pretty important, so you may be missing an important abstraction. Common code can be factored into a separate method or class, or placed in a common superclass. 
+
+# HTTP
+
+Client connection with server: client initiates communication with the server, establishes a connection that allows data to be sent back and forth. In order to connect, the client and server machines each need an IP address, and the client needs to know the server's IP address to connect. Instead of using IP addresses in most cases, we normally use a domain name and the Domain Name Service to convert a domain name into an IP address. A server machine will probably be running multiple programs through the internet, so an IP address is not enough information. Each server program communicates on a 'port' number, so the client must know that port number to connect. A default HTTP port is 80, HTTPS is 443, email is 25, SSH is 22.
+
+HTTP Get Request: Needs a URL - Uniform Resource Locator - Protocol, Domain name, port number (optional, falls back to default protocol ports), path string. When you type in a url into a browser, it makes a connection, then constructs an HTTP request, which looks like: 
+- GET (request type) URL path HTTP/1.1 (HTTP version)
+- (Headers, key/value pairs) Accept: types \n Accept-Encoding: types \n User-Agent: browser information
+A GET response looks like:
+- Version, status code, status code explanation
+- Headers
+- Empty line
+- Response body
+
+HTTP Post Request: Mostly how forms works. Request has a method, path, version, header, and request body. A post has data appended to it. The response will also have body data.
+
+Request types: GET (get data), POST (give new data), PUT (update resource), DELETE (delete information)
+
+Status codes: 200 - good, 400 - client error/bad request, 500 - server error, 300 - redirect
+
+## Web API
+A Web API uses things that look like URLs and HTTP requests to call functions over the web.
+
+GET request
+- Get /function_name, maybe one header is Authorization: Auth-Token
+- Returns the same sort of response with a response body
+
+POST request
+- Sends input parameters in request body as a JSON object
+- Needs to be a post request if you want to send data
+- Use response status code to raise errors
+
+## Curl
+Used for debugging web APIs that don't use the browser. Command line tool to create and send HTTP requests. Available, shareable, good for automation. 
+
+Example: curl byu.edu - returns response body, such as the actual home page for the byu website in html. Defaults to GET, can change using -X (type). Can use -v to show more information. Can use -H to specify headers, -d for request body data or --data-binary to put in request body data from file, -o to dump output response in a file. 
+
+Using curl requests with the API:
+- curl -X POST http://localhost:8080/session -d '{"username": "me", "password": "1234"}
+- curl -X GET http://localhost:8080/game -H 'Authorization: auth-token'
+- curl -X DELETE http://localhost:8080/session -H 'Authorization: auth-token'
+
+Instead of using curl, there are some other interfaces you can use, such as postman, which you can use online, or in VS code.
+
+## Web Server
+
+### Javalin 
+
+Javalin.create()
+  .get("/hello", ctx -> ctx.result("Hello BYU!")
+  .start(8080)
+
+--- Similarly can be ...
+
+public class AlternateSimpleHelloBYUServer {
+  public static void main(String[] args) {
+    Javalin.create()
+      .get("/hello", AlternateSimpleHelloBYUServer::handleHello)
+      .start(8080)
+  }
+
+  private static void handleHello(Context ctx) {
+    ctx.result("Hello BYU!")
+  }
+}
+
+--- Similarly can be ...
+
+public class Alternate2SimpleHelloBYUServer {
+  public static void main(String[] args) {
+    Javalin.create()
+      .get("/hello", new HelloHandler())
+      .start(8080)
+  }
+
+  private static Class HelloHandler implments Handler {
+    @Override
+    public void handle(Context ctx) throws Exception {
+      ctx.result("Hello BYU!")
+    }
+  }
+}
+
+Things necessary for project 3:
+- Should include a port number as the first arg, or a default port
+- use createHandlers(javalinServer) to move .get into function which runs as javalinServer.get()
+- Put Handlers into their own files
+
+What does the Server return:
+- HTTP version, status code, reason
+- Headers
+- Content
+
+Creating the context/response in a handler:
+- context.json("{object}")
+- context.status(number)
+- context.contentType('application/json')
+- context.header(name, value)
+- context.result('{message: Hello BYU!}')
+- body, headerMap, header, path, result, json, header, contentType, status
+
+### Handlers
+
+Routes - Url with a handler attached to it
+
+Before and After Handlers
+- Something called for every request
+- Authentication
+- Making sure the response bodies are full
+- Logging or debugging
+- If a Before handler throws an error, it won't proceed to other handlers
+- Use javalin.before()
+- Can take an optional pattern to restrict routes to which they are applied: before("/protected/*" ...)
+- Additionally have after handlers
+
+Extracting information from url:
+- get("/hello/<name>", context -> {return "Hello: " + context.pathParam("name");})
+- Use {} to match only one segment of the url
+- Use <> to math the entire rest of the url
+- Wildcard parameter: use * to match all, without caring what the value is
+
+### Error Handling
+
+Errors must be caught by the handler. Can use and catch exceptions. Can use the return value of the function to indicate if there was an error down the line. Can use the 'result' class to package the errors. Make sure any exceptions that are thrown (or percolated) are actually useful for each of those classes. Each layer of code should throw it's own exception type. Let the DAO be the only one to throw a DataAccessException, and let the Service throw something else, even through percolating.
+
+Javalin
+- javalin.exception(Exception.class, (e, ctx) -> {handle exception, put info into context})
+- javalin.error(404, ctx -> {process erorr consistently across server})
+
+### Serving Static Files
+
+Allows a website to actually work, and be able to be visited. Need all the information to be together. Can use a resources folder to hold the html, css, js, images, data, icons, etc. Need to tell the server where the webfiles are. Files are called static because they aren't changing.
+
+javalin.create(config -> config.staticFiles.add("folder name"))
+
+
+# Quality Code
+
+Software design is both engineering and an art.
+
+Good principles:
+- helpful naming
+- formatting/indentation/whitespace
+- comments, docstrings, explanations
+- short methods or subfunctions
+- decomposition
+
+Naming conventions
+- Classes explain what they represent
+- functions explain what they do
+- Packages are all lower case, reverse of domain name
+- Classes use CamelCase with front capitalization
+- Methods and variables are camelCase with no front capitalization
+- Constants are ALL_CAPS
+
+Readability
+- Good naming
+- Line length is not too long
+- Comments (but not unnecessary ones)
+- Put separate if conditions on separate lines
+- Line things up well when you wrap lines
+- Use proper indentation
+- Good and consistent use of white space - newlines, indentation, spaces between variables or expressions
+- Curly brace or parantheses placement
+- Subexpressions or submethods
+- Don't write code that never gets used
+
+# Unit Testing
+
+Positive test: make sure it works when given valid input. Negative test: make sure it fails or errors when it ought to.
+Test Driven Development is when you write all of your tests before you actually write the code. This helps the coder understand the program better, and help them to focus on what it is supposed to look like. Need to test that each piece works the way that it should before adding it to the system, and then testing each smaller assembly, and so on for each and every step.
+
+Unit testing focuses most on the classes, sometimes on certain methods. After unit testing you need integration testing and then system testing. But the person writing the code is in charge of the unit tests. 
+
+Unit tests are methods that compare a calculated result to an expected result. Each method should have their own tests. Unit tests can be run and rerun frequently so that you know if any new code you've introduced has caused anything to fail. Testing old code is called regression testing.
+
+A test driver is a program that runs all the tests, and gives you a report. You can use the framework Junit to create a test driver. Use Assertions.assertTrue(stuff), or assertEquals, assertFalse, assertThrows, assertArrayEquals, assertDoesNotThrow, assertNotEquals, assertHttpOk. Use decorator @Test above test cases, and don't put it above supporting methods. The tests should be nested inside a SomethingTest class. A lot of tests will have similar setup or objects, wo you can declare the variables in the class, and then tag a @BeforeAll method that can create all those objects, and an @AfterAll method that can clean up those objects (such as a server). Use @BeforeEach and @AfterEach to run in between each test, and potentially reset information.
+
