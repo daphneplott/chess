@@ -5,11 +5,11 @@ import model.UserData;
 
 public interface UserDaoInterface {
 
-    void createUser(UserData user) throws DataAccessException;
+    void createUser(UserData user) throws DataAccessException, BadDataRequestException;
 
-    UserData getUser(String username) throws DataAccessException;
+    UserData getUser(String username) throws DataAccessException, BadDataRequestException;
 
-    void deleteUser(String username) throws DataAccessException;
+    void deleteUser(String username) throws DataAccessException, BadDataRequestException;
 
-    void deleteAllUsers() throws DataAccessException;
+    void deleteAllUsers() throws DataAccessException, BadDataRequestException;
 }

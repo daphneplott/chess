@@ -19,13 +19,13 @@ public class MemoryGameDao implements GameDaoInterface {
     };
 
     @Override
-    public GameData getGame(int gameID) throws DataAccessException {
+    public GameData getGame(int gameID) {
         for (GameData game : games) {
             if (game.gameID() == gameID) {
                 return game;
             }
         }
-        throw new DataAccessException("Game ID not found.");
+        throw new BadDataRequestException("Game ID not found.");
     };
 
     @Override
@@ -35,11 +35,11 @@ public class MemoryGameDao implements GameDaoInterface {
             if (game.gameID() == gameID) {
                 GameData newgame = game.updatePlayerColor(playerColor, username);
                 games.remove(game);
-                games.add(newgame);
+                games.add(gameID-1, newgame);
                 return;
             }
         }
-        throw new DataAccessException("Game ID not found");
+        throw new BadDataRequestException("Game ID not found");
     };
 
     @Override
@@ -50,7 +50,7 @@ public class MemoryGameDao implements GameDaoInterface {
                 return;
             }
         }
-        throw new DataAccessException("Game ID not found");
+        throw new BadDataRequestException("Game ID not found");
     };
 
     @Override

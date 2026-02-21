@@ -24,7 +24,7 @@ public class MemoryAuthDao implements AuthDaoInterface {
                 return auth;
             }
         }
-        throw new DataAccessException("Auth Token does not exist.");
+        throw new BadDataRequestException("Auth Token does not exist.");
     }
 
     @Override
@@ -40,7 +40,7 @@ public class MemoryAuthDao implements AuthDaoInterface {
                 return;
             }
         }
-        throw new DataAccessException("Auth Token does not exist.");
+        throw new BadDataRequestException("Auth Token does not exist.");
     };
 
     @Override

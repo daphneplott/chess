@@ -18,7 +18,7 @@ public class MemoryUserDao implements UserDaoInterface {
     @Override
     public void createUser(UserData user) throws DataAccessException {
         if(this.usernames.contains(user.username())) {
-            throw new DataAccessException("This username is already taken.");
+            throw new BadDataRequestException("This username is already taken.");
         } else {
             this.users.add(user);
             this.usernames.add(user.username());
@@ -32,7 +32,7 @@ public class MemoryUserDao implements UserDaoInterface {
                 return user;
             }
         }
-        throw new DataAccessException("This username does not exist");
+        throw new BadDataRequestException("This username does not exist");
     };
 
     @Override
@@ -44,7 +44,7 @@ public class MemoryUserDao implements UserDaoInterface {
                 return;
             }
         }
-        throw new DataAccessException("This username does not exist.");
+        throw new BadDataRequestException("This username does not exist.");
     };
 
     @Override
