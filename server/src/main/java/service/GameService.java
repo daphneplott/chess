@@ -23,7 +23,7 @@ public class GameService {
 
     public Results.ListGamesResult listGames(Requests.ListGamesRequest request) {
         try {
-            authDao.getAuth(request.auth().authToken());
+            authDao.getAuth(request.auth());
         } catch (BadDataRequestException e) {
             return new Results.ListGamesResult(401,new ArrayList<>(),"Error: unauthorized");
         } catch (DataAccessException e) {
@@ -39,7 +39,7 @@ public class GameService {
 
     public Results.CreateGameResult createGame(Requests.CreateGameRequest request) {
         try {
-            authDao.getAuth(request.auth().authToken());
+            authDao.getAuth(request.auth());
         } catch (BadDataRequestException e) {
             return new Results.CreateGameResult(401,-1,"Error: unauthorized");
         } catch (DataAccessException e) {
@@ -58,7 +58,7 @@ public class GameService {
     public Results.JoinGameResult joinGame(Requests.JoinGameRequest request) {
         AuthData auth;
         try {
-            auth = authDao.getAuth(request.auth().authToken());
+            auth = authDao.getAuth(request.auth());
         } catch (BadDataRequestException e) {
             return new Results.JoinGameResult(401,"Error: unauthorized");
         } catch (DataAccessException e) {

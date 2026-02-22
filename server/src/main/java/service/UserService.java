@@ -53,14 +53,14 @@ public class UserService {
 
     public Results.LogoutResult logout(Requests.LogoutRequest request) {
         try {
-            authDao.getAuth(request.auth().authToken());
+            authDao.getAuth(request.auth());
         } catch (BadDataRequestException e) {
             return new Results.LogoutResult(401,"Error: unauthorized");
         } catch (DataAccessException e) {
             return new Results.LogoutResult(500, String.format("Error: %s",e.getMessage()));
         }
         try {
-            authDao.deleteAuth(request.auth().authToken());
+            authDao.deleteAuth(request.auth());
             return new Results.LogoutResult(200, "");
         } catch (DataAccessException e) {
             return new Results.LogoutResult(500,String.format("Error: %s", e.getMessage()));

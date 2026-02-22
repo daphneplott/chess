@@ -9,11 +9,11 @@ public class Requests {
 
     public record LoginRequest(String username, String password) {};
 
-    public record LogoutRequest(AuthData auth) {};
+    public record LogoutRequest(String auth) {};
 
-    public record ListGamesRequest(AuthData auth) {};
+    public record ListGamesRequest(String auth) {};
 
-    public record CreateGameRequest(AuthData auth, String gameName) {};
+    public record CreateGameRequest(String auth, String gameName) {};
 
-    public record JoinGameRequest(AuthData auth, ChessGame.TeamColor playerColor, int gameID) {};
+    public record JoinGameRequest(String auth, ChessGame.TeamColor playerColor, int gameID) {};
 }
