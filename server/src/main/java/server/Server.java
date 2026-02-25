@@ -51,53 +51,90 @@ public class Server {
     }
 
     private void register(Context ctx) {
+        Results.RegisterResult result;
         Requests.RegisterRequest request = gson.fromJson(ctx.body(), Requests.RegisterRequest.class);
-        Results.RegisterResult result = userService.register(request);
+        if (request.username() == null | request.password() == null | request.email() == null) {
+            result = new Results.RegisterResult(400,null,null,"Error: bad request");
+        } else {
+            result = userService.register(request);
+        }
         ctx.result(gson.toJson(result));
+        ctx.status(result.code());
     }
 
     private void login(Context ctx) {
+        Results.LoginResult result;
         Requests.LoginRequest request = gson.fromJson(ctx.body(),Requests.LoginRequest.class);
-        Results.LoginResult result = userService.login(request);
+        if (request.username() == null | request.password() == null) {
+            result = new Results.LoginResult(400,null,null,"Error: bad request");
+        } else {
+            result = userService.login(request);
+        }
         ctx.result(gson.toJson(result));
+        ctx.status(result.code());
     }
 
     private void logout(Context ctx) {
+        Results.LogoutResult result;
         Requests.LogoutRequest request = new Requests.LogoutRequest(ctx.header("authorization"));
-        Results.LogoutResult result = userService.logout(request);
+        if (request.auth() == null) {
+            result = new Results.LogoutResult(400,"Error: bad request");
+        } else {
+            result = userService.logout(request);
+        }
         ctx.result(gson.toJson(result));
+        ctx.status(result.code());
     }
 
     private void listGames(Context ctx) {
+        Results.ListGamesResult result;
         var request = new Requests.ListGamesRequest(ctx.header("authorization"));
-        var result = gameService.listGames(request);
+        if (request.auth() == null) {
+            result = new Results.ListGamesResult(400, null, "Error: bad request");
+        } else {
+            result = gameService.listGames(request);
+        }
         ctx.result(gson.toJson(result));
+        ctx.status(result.code());
     }
 
     private void createGame(Context ctx) {
+        Results.CreateGameResult result;
         Requests.CreateGameRequest requestBody = gson.fromJson(ctx.body(),Requests.CreateGameRequest.class);
         var request = new Requests.CreateGameRequest(
                 ctx.header("authorization"),
                 requestBody.gameName()
         );
-        var result = gameService.createGame(request);
+        if (request.gameName() == null) {
+            result = new Results.CreateGameResult(400,null,"Error: bad request");
+        } else {
+            result = gameService.createGame(request);
+        }
         ctx.result(gson.toJson(result));
+        ctx.status(result.code());
     }
 
     private void joinGame(Context ctx) {
+        Results.JoinGameResult result;
         var requestBody = gson.fromJson(ctx.body(),Requests.JoinGameRequest.class);
         var request = new Requests.JoinGameRequest(
                 ctx.header("authorization"),
                 requestBody.playerColor(),
                 requestBody.gameID()
         );
-        var result = gameService.joinGame(request);
+        if (request.auth() == null | request.playerColor() == null | request.gameID() == null) {
+            result = new Results.JoinGameResult(400, "Error: bad request");
+        } else {
+            result = gameService.joinGame(request);
+        }
         ctx.result(gson.toJson(result));
+        ctx.status(result.code());
     }
 
     private void clear(Context ctx) {
         var result = clearService.clear();
         ctx.result(gson.toJson(result));
+        ctx.status(result.code());
     }
 
 

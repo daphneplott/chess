@@ -176,7 +176,7 @@ public class StandardAPITests {
     @Order(9)
     @DisplayName("Create with Bad Authentication")
     public void createGameUnauthorized() {
-        //log out user so auth is invalid
+        //log out user so authToken is invalid
         serverFacade.logout(existingAuth);
 
         TestCreateResult createResult = serverFacade.createGame(createRequest, existingAuth);
@@ -430,7 +430,7 @@ public class StandardAPITests {
         loginResult = serverFacade.login(user);
         assertHttpUnauthorized(loginResult);
 
-        //try to use old auth token to list games
+        //try to use old authToken token to list games
         TestListResult listResult = serverFacade.listGames(existingAuth);
         assertHttpUnauthorized(listResult);
 

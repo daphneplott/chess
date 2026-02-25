@@ -48,11 +48,11 @@ public class MemoryGameDao implements GameDaoInterface {
 
     private boolean colorTaken(GameData game, ChessGame.TeamColor playerColor) {
         if (playerColor == ChessGame.TeamColor.WHITE) {
-            if (game.whiteUsername().equals("")) {
+            if (game.whiteUsername() == null) {
                 return false;
             } else { return true;}
         } else { //playerColor == ChessGame.TeamColor.BLACK) {
-            if (game.blackUsername().equals("")) {
+            if (game.blackUsername() == null) {
                 return false;
             } else { return true; }
         }

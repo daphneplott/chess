@@ -44,7 +44,7 @@ public class UnitTests {
 
         //one user already logged in
         Results.RegisterResult regResult = userService.register(new Requests.RegisterRequest("existing user","1234","eu@mail.com"));
-        existingAuth = regResult.auth();
+        existingAuth = regResult.authToken();
     }
 
     @Test
@@ -65,8 +65,8 @@ public class UnitTests {
         Assertions.assertEquals(regResult.username(), "new user");
         Assertions.assertTrue(userDao.getUsers().contains(newUser));
         Assertions.assertTrue(userDao.getUsernames().contains("new user"));
-        Assertions.assertNotEquals(existingAuth, regResult.auth());
-        Assertions.assertTrue(authDao.getAuthTokens().contains(new AuthData(regResult.auth(),"new user")));
+        Assertions.assertNotEquals(existingAuth, regResult.authToken());
+        Assertions.assertTrue(authDao.getAuthTokens().contains(new AuthData(regResult.authToken(),"new user")));
     }
 
     @Test
@@ -95,7 +95,7 @@ public class UnitTests {
         userService.logout(new Requests.LogoutRequest(existingAuth));
         Results.LoginResult loginResult = userService.login(new Requests.LoginRequest("existing user","1234"));
         Assertions.assertEquals(loginResult.code(),200);
-        Assertions.assertTrue(authDao.getAuthValues().contains(loginResult.auth()));
+        Assertions.assertTrue(authDao.getAuthValues().contains(loginResult.authToken()));
     }
 
     @Test
@@ -168,7 +168,7 @@ public class UnitTests {
         gameService.joinGame(new Requests.JoinGameRequest(existingAuth, ChessGame.TeamColor.WHITE, createGameResult.gameID()));
 
         Results.RegisterResult regResult = userService.register(new Requests.RegisterRequest("new user","5678","new@mail.com"));
-        String newAuth = regResult.auth();
+        String newAuth = regResult.authToken();
 
         Results.JoinGameResult joinGameResult = gameService.joinGame(new Requests.JoinGameRequest(newAuth,ChessGame.TeamColor.WHITE,createGameResult.gameID()));
 

@@ -15,5 +15,5 @@ public class Requests {
 
     public record CreateGameRequest(String auth, String gameName) {};
 
-    public record JoinGameRequest(String auth, ChessGame.TeamColor playerColor, int gameID) {};
+    public record JoinGameRequest(String auth, ChessGame.TeamColor playerColor, Integer gameID) {};
 }

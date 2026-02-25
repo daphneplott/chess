@@ -29,11 +29,11 @@ public class UserService {
             }
             AuthData auth = new AuthData(authToken,request.username());
             authDao.createAuth(auth);
-            return new Results.RegisterResult(200, request.username(),authToken,"");
+            return new Results.RegisterResult(200, request.username(),authToken,null);
         } catch (BadDataRequestException e) {
-            return new Results.RegisterResult(403,"","","Error: already taken");
+            return new Results.RegisterResult(403,null,null,"Error: already taken");
         } catch (DataAccessException e) {
-            return new Results.RegisterResult(500,"","",String.format("Error: %s",e.getMessage()));
+            return new Results.RegisterResult(500,null,null,String.format("Error: %s",e.getMessage()));
         }
     }
 
@@ -41,16 +41,16 @@ public class UserService {
         try {
             UserData user = userDao.getUser(request.username());
             if (!user.password().equals(request.password())) {
-                return new Results.LoginResult(401,"","","Error: unauthorized");
+                return new Results.LoginResult(401,null,null,"Error: unauthorized");
             }
             String authToken = UUID.randomUUID().toString();
             AuthData auth = new AuthData(authToken,request.username());
             authDao.createAuth(auth);
-            return new Results.LoginResult(200, request.username(),authToken,"");
+            return new Results.LoginResult(200, request.username(),authToken,null);
         } catch (BadDataRequestException e) {
-            return new Results.LoginResult(401,"","","Error: unauthorize");
+            return new Results.LoginResult(401,null,null,"Error: unauthorized");
         } catch (DataAccessException e) {
-            return new Results.LoginResult(500,"","",String.format("Error: %s",e.getMessage()));
+            return new Results.LoginResult(500,null,null,String.format("Error: %s",e.getMessage()));
         }
     }
 
@@ -64,7 +64,7 @@ public class UserService {
         }
         try {
             authDao.deleteAuth(request.auth());
-            return new Results.LogoutResult(200, "");
+            return new Results.LogoutResult(200, null);
         } catch (DataAccessException e) {
             return new Results.LogoutResult(500,String.format("Error: %s", e.getMessage()));
         } catch (BadDataRequestException e) {

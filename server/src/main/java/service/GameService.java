@@ -30,7 +30,7 @@ public class GameService {
         }
         try {
             ArrayList<GameData> games = gameDao.listGames();
-            return new Results.ListGamesResult(200,games,"");
+            return new Results.ListGamesResult(200,games,null);
         } catch (DataAccessException e) {
             return new Results.ListGamesResult(500, new ArrayList<>(),String.format("Error: %s", e.getMessage()));
         }
@@ -40,17 +40,17 @@ public class GameService {
         try {
             authDao.getAuth(request.auth());
         } catch (BadDataRequestException e) {
-            return new Results.CreateGameResult(401,-1,"Error: unauthorized");
+            return new Results.CreateGameResult(401,null,"Error: unauthorized");
         } catch (DataAccessException e) {
-            return new Results.CreateGameResult(500,-1, String.format("Error: %s",e.getMessage()));
+            return new Results.CreateGameResult(500,null, String.format("Error: %s",e.getMessage()));
         }
         try {
             int gameID = gameDao.getGameID();
-            GameData game = new GameData(gameID,"","",request.gameName(),new ChessGame());
+            GameData game = new GameData(gameID,null,null,request.gameName(),new ChessGame());
             gameDao.createGame(game);
-            return new Results.CreateGameResult(200,gameID,"");
+            return new Results.CreateGameResult(200,gameID,null);
         } catch (DataAccessException e) {
-            return new Results.CreateGameResult(500,-1, String.format("Error: %s",e.getMessage()));
+            return new Results.CreateGameResult(500,null, String.format("Error: %s",e.getMessage()));
         }
     }
 
@@ -65,7 +65,7 @@ public class GameService {
         }
         try {
             gameDao.updateGame(request.playerColor(), auth.username(),request.gameID());
-            return new Results.JoinGameResult(200, "");
+            return new Results.JoinGameResult(200, null);
         } catch (DataAccessException e) {
             return new Results.JoinGameResult(500, String.format("Error: %s",e.getMessage()));
         } catch (BadDataRequestException e) {
