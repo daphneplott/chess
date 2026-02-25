@@ -2,6 +2,8 @@ package dataaccess;
 
 import model.UserData;
 
+import java.util.ArrayList;
+
 
 public interface UserDaoInterface {
 
@@ -12,4 +14,8 @@ public interface UserDaoInterface {
     void deleteUser(String username) throws DataAccessException, BadDataRequestException;
 
     void deleteAllUsers() throws DataAccessException, BadDataRequestException;
+
+    ArrayList<String> getUsernames();
+
+    ArrayList<UserData> getUsers();
 }

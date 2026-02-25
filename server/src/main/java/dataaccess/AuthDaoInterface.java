@@ -2,6 +2,8 @@ package dataaccess;
 
 import model.AuthData;
 
+import java.util.ArrayList;
+
 
 public interface AuthDaoInterface {
 
@@ -14,5 +16,9 @@ public interface AuthDaoInterface {
     void deleteAuth(String authToken) throws DataAccessException, BadDataRequestException;
 
     void deleteAllAuth() throws DataAccessException, BadDataRequestException;
+
+    ArrayList<AuthData> getAuthTokens();
+
+    ArrayList<String> getAuthValues();
 }
 

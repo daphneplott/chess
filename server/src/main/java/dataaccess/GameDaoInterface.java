@@ -18,4 +18,8 @@ public interface GameDaoInterface {
     void deleteAllGames() throws DataAccessException, BadDataRequestException;
 
     ArrayList<GameData> listGames() throws DataAccessException, BadDataRequestException;
+
+    int getGameID();
+
+    void resetGameID();
 }

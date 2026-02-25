@@ -14,7 +14,6 @@ public class GameService {
 
     private GameDaoInterface gameDao;
     private AuthDaoInterface authDao;
-    static int gameID = 1;
 
     public GameService(GameDaoInterface gameDao, AuthDaoInterface authDao) {
         this.gameDao = gameDao;
@@ -46,10 +45,10 @@ public class GameService {
             return new Results.CreateGameResult(500,-1, String.format("Error: %s",e.getMessage()));
         }
         try {
+            int gameID = gameDao.getGameID();
             GameData game = new GameData(gameID,"","",request.gameName(),new ChessGame());
-            gameID += 1;
             gameDao.createGame(game);
-            return new Results.CreateGameResult(200,gameID - 1,"");
+            return new Results.CreateGameResult(200,gameID,"");
         } catch (DataAccessException e) {
             return new Results.CreateGameResult(500,-1, String.format("Error: %s",e.getMessage()));
         }

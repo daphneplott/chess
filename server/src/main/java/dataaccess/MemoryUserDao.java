@@ -52,4 +52,15 @@ public class MemoryUserDao implements UserDaoInterface {
         this.users.clear();
         this.usernames.clear();
     };
+
+    @Override
+    public ArrayList<UserData> getUsers() {
+        return users;
+    }
+
+    @Override
+    public ArrayList<String> getUsernames() {
+        return usernames;
+    }
+
 }

@@ -24,6 +24,9 @@ public class UserService {
             UserData user = new UserData(request.username(), request.password(), request.email());
             userDao.createUser(user);
             String authToken = UUID.randomUUID().toString();
+            while (authDao.getAuthValues().contains(authToken)) {
+                authToken = UUID.randomUUID().toString();
+            }
             AuthData auth = new AuthData(authToken,request.username());
             authDao.createAuth(auth);
             return new Results.RegisterResult(200, request.username(),authToken,"");
