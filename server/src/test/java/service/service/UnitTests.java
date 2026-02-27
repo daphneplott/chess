@@ -133,13 +133,13 @@ public class UnitTests {
         Results.ListGamesResult listGameResult = gameService.listGames(new Requests.ListGamesRequest(existingAuth));
         Assertions.assertEquals(listGameResult.code(),200);
         ArrayList<GameData> expectedGames = new ArrayList<>();
-        expectedGames.add(new GameData(1,"","","Test Game",new ChessGame()));
+        expectedGames.add(new GameData(1,null,null,"Test Game",new ChessGame()));
         Assertions.assertEquals(listGameResult.games(), expectedGames);
 
         Results.CreateGameResult createGameResult2 = gameService.createGame(new Requests.CreateGameRequest(existingAuth,"Test Game 2"));
         Results.ListGamesResult listGameResult2 = gameService.listGames(new Requests.ListGamesRequest(existingAuth));
         Assertions.assertEquals(listGameResult2.code(),200);
-        expectedGames.add(new GameData(2, "","","Test Game 2",new ChessGame()));
+        expectedGames.add(new GameData(2, null,null,"Test Game 2",new ChessGame()));
         Assertions.assertEquals(listGameResult2.games(),expectedGames);
     }
 
@@ -161,7 +161,7 @@ public class UnitTests {
                 gameService.joinGame(new Requests.JoinGameRequest(existingAuth, ChessGame.TeamColor.WHITE, createGameResult.gameID()));
         Assertions.assertEquals(joinGameResult.code(), 200);
         ArrayList<GameData> expectedGames = new ArrayList<>();
-        expectedGames.add(new GameData(1,"existing user","","Test Game",new ChessGame()));
+        expectedGames.add(new GameData(1,"existing user",null,"Test Game",new ChessGame()));
         Assertions.assertEquals(gameDao.listGames(), expectedGames);
     }
 
@@ -179,7 +179,7 @@ public class UnitTests {
 
         Assertions.assertEquals(joinGameResult.code(), 403);
         ArrayList<GameData> expectedGames = new ArrayList<>();
-        expectedGames.add(new GameData(1,"existing user","","Test Game",new ChessGame()));
+        expectedGames.add(new GameData(1,"existing user",null,"Test Game",new ChessGame()));
         Assertions.assertEquals(gameDao.listGames(), expectedGames);
     }
 }

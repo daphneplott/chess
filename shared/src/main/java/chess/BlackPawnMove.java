@@ -25,18 +25,18 @@ public class BlackPawnMove {
         this.pos = pos;
 
         next = new ChessPosition(row - 1, col);
-        if (canGoForward(false)) {
+        if (WhitePawnMove.canGoForward(false,next,atNext,board,color)) {
             if (row > 2) {
                 moves.add(new ChessMove(pos, next, null));
             } else if (row == 2) {
                 addPromotions();
             }
             if (row == 7) {
-                addInGoTwoSpaces(row - 2, col);
+                addInGoTwoSpaces(row - 2, col,pos,next, atNext, board,moves);
             }
         }
         next = new ChessPosition(row - 1, col - 1);
-        if (canGoForward(true)) {
+        if (WhitePawnMove.canGoForward(true, next,atNext,board,color)) {
             if (row > 2) {
                 moves.add(new ChessMove(pos, next, null));
             } else if (row == 2) {
@@ -44,7 +44,7 @@ public class BlackPawnMove {
             }
         }
         next = new ChessPosition(row - 1, col + 1);
-        if (canGoForward(true)) {
+        if (WhitePawnMove.canGoForward(true,next,atNext,board,color)) {
             if (row > 2) {
                 moves.add(new ChessMove(pos, next, null));
             } else if (row == 2) {
@@ -59,19 +59,8 @@ public class BlackPawnMove {
         }
     }
 
-    private boolean canGoForward(boolean take) {
-        if (next.inRange()) {
-            atNext = board.getPiece(next);
-            if (!take) {
-                return atNext == null;
-            } else {
-                return atNext != null && atNext.getTeamColor() != color;
-            }
-        }
-        return false;
-    }
-
-    private void addInGoTwoSpaces(int adjustedRow, int adjustedCol) {
+    static void addInGoTwoSpaces(int adjustedRow, int adjustedCol, ChessPosition pos, ChessPosition next,
+                                 ChessPiece atNext, ChessBoard board, ArrayList<ChessMove> moves) {
         next = new ChessPosition(adjustedRow, adjustedCol);
         atNext = board.getPiece(next);
         if (atNext == null) {

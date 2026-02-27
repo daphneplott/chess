@@ -25,18 +25,18 @@ public class WhitePawnMove {
         this.pos = pos;
 
         next = new ChessPosition(row + 1, col);
-        if (canGoForward(false)) {
+        if (canGoForward(false,next,atNext,board,color)) {
                 if (row < 7) {
                     moves.add(new ChessMove(pos, next, null));
                 } else if (row == 7) {
                     addPromotions();
                 }
                 if (row == 2) {
-                    addInGoTwoSpaces(row + 2, col);
+                    BlackPawnMove.addInGoTwoSpaces(row + 2, col,pos,next,atNext,board,moves);
                 }
         }
         next = new ChessPosition(row + 1, col - 1);
-        if (canGoForward(true)) {
+        if (canGoForward(true,next,atNext,board,color)) {
                 if (row < 7) {
                     moves.add(new ChessMove(pos, next, null));
                 } else if (row == 7) {
@@ -44,7 +44,7 @@ public class WhitePawnMove {
                 }
             }
         next = new ChessPosition(row + 1, col + 1);
-        if (canGoForward(true)) {
+        if (canGoForward(true, next, atNext,board,color)) {
                 if (row < 7) {
                     moves.add(new ChessMove(pos, next, null));
                 } else if (row == 7) {
@@ -59,7 +59,8 @@ public class WhitePawnMove {
         }
     }
 
-    private boolean canGoForward(boolean take) {
+    static boolean canGoForward(boolean take, ChessPosition next, ChessPiece atNext,
+                                ChessBoard board, ChessGame.TeamColor color) {
         if (next.inRange()) {
             atNext = board.getPiece(next);
             if (!take) {
@@ -69,14 +70,6 @@ public class WhitePawnMove {
                 return atNext != null && atNext.getTeamColor() != color;
             }
         } return false;
-    }
-
-    private void addInGoTwoSpaces(int adjustedRow,int adjustedCol) {
-        next = new ChessPosition(adjustedRow, adjustedCol);
-        atNext = board.getPiece(next);
-        if (atNext == null) {
-            moves.add(new ChessMove(pos, next, null));
-        }
     }
 
     public ArrayList<ChessMove> getMoves() {
