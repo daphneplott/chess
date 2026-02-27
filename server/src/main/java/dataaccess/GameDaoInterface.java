@@ -13,8 +13,6 @@ public interface GameDaoInterface {
 
     void updateGame(ChessGame.TeamColor playerColor, String username, int gameID) throws DataAccessException, BadDataRequestException;
 
-    void deleteGame(int gameID) throws DataAccessException, BadDataRequestException;
-
     void deleteAllGames() throws DataAccessException, BadDataRequestException;
 
     ArrayList<GameData> listGames() throws DataAccessException, BadDataRequestException;

@@ -5,9 +5,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class KnightMove {
-    private ArrayList<ChessMove> moves = new ArrayList<>();
-
-    record Pair(int x, int y) {}
+    private ArrayList<ChessMove> moves;
 
     public KnightMove(ChessBoard board, ChessPosition position, ChessGame.TeamColor color) {
         /*
@@ -23,23 +21,13 @@ public class KnightMove {
         Make sure the knight doesn't move off the board
 
          */
-        ArrayList<Pair> potentialMath = new ArrayList<Pair>(Arrays.asList(
-                new Pair(1,2), new Pair(1,-2), new Pair(-1,2),new Pair(-1,-2),
-                new Pair(2,1), new Pair(2, -1), new Pair(-2, 1), new Pair(-2, -1)
+        ArrayList<KingMove.Pair> potentialMath = new ArrayList<KingMove.Pair>(Arrays.asList(
+                new KingMove.Pair(1,2), new KingMove.Pair(1,-2), new KingMove.Pair(-1,2),new KingMove.Pair(-1,-2),
+                new KingMove.Pair(2,1), new KingMove.Pair(2, -1), new KingMove.Pair(-2, 1), new KingMove.Pair(-2, -1)
         ));
-        ChessPosition next;
-        ChessPiece piece;
-        for (Pair pair : potentialMath) {
-            if (position.getColumn() + pair.y() < 9 && position.getColumn() + pair.y() >0 &&
-                    position.getRow() + pair.x() < 9&& position.getRow()+pair.x() > 0
-                ) {
-                next = new ChessPosition(position.getRow() + pair.x(), position.getColumn() + pair.y());
-                piece = board.getPiece(next);
-                if (piece == null || piece.getTeamColor() != color) {
-                    moves.add(new ChessMove(position, next, null));
-                }
-            }
-        }
+
+        moves = KingMove.getMovesWithSpecificSubset(potentialMath,board,position,color);
+
     }
 
     public ArrayList<ChessMove> getMoves() {

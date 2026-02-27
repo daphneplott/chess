@@ -59,17 +59,6 @@ public class MemoryGameDao implements GameDaoInterface {
     }
 
     @Override
-    public void deleteGame(int gameID) throws DataAccessException {
-        for (GameData game : games) {
-            if (game.gameID() == gameID) {
-                games.remove(game);
-                return;
-            }
-        }
-        throw new BadDataRequestException("Game ID not found");
-    };
-
-    @Override
     public void deleteAllGames() {
         games.clear();
     };

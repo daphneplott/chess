@@ -31,11 +31,6 @@ public class MemoryAuthDao implements AuthDaoInterface {
     }
 
     @Override
-    public void updateAuth(String authToken) {
-        return;
-    }
-
-    @Override
     public void deleteAuth(String authToken) throws DataAccessException {
         for (AuthData auth : authTokens) {
             if (auth.authToken().equals(authToken)) {

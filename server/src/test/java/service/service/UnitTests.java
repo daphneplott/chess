@@ -1,3 +1,4 @@
+package service;
 
 import chess.ChessGame;
 import dataaccess.*;
@@ -154,8 +155,10 @@ public class UnitTests {
 
     @Test
     public void joinGameSuccess() throws DataAccessException {
-        Results.CreateGameResult createGameResult = gameService.createGame(new Requests.CreateGameRequest(existingAuth,"Test Game"));
-        Results.JoinGameResult joinGameResult = gameService.joinGame(new Requests.JoinGameRequest(existingAuth, ChessGame.TeamColor.WHITE, createGameResult.gameID()));
+        Results.CreateGameResult createGameResult =
+                gameService.createGame(new Requests.CreateGameRequest(existingAuth,"Test Game"));
+        Results.JoinGameResult joinGameResult =
+                gameService.joinGame(new Requests.JoinGameRequest(existingAuth, ChessGame.TeamColor.WHITE, createGameResult.gameID()));
         Assertions.assertEquals(joinGameResult.code(), 200);
         ArrayList<GameData> expectedGames = new ArrayList<>();
         expectedGames.add(new GameData(1,"existing user","","Test Game",new ChessGame()));
@@ -167,10 +170,12 @@ public class UnitTests {
         Results.CreateGameResult createGameResult = gameService.createGame(new Requests.CreateGameRequest(existingAuth,"Test Game"));
         gameService.joinGame(new Requests.JoinGameRequest(existingAuth, ChessGame.TeamColor.WHITE, createGameResult.gameID()));
 
-        Results.RegisterResult regResult = userService.register(new Requests.RegisterRequest("new user","5678","new@mail.com"));
+        Results.RegisterResult regResult =
+                userService.register(new Requests.RegisterRequest("new user","5678","new@mail.com"));
         String newAuth = regResult.authToken();
 
-        Results.JoinGameResult joinGameResult = gameService.joinGame(new Requests.JoinGameRequest(newAuth,ChessGame.TeamColor.WHITE,createGameResult.gameID()));
+        Results.JoinGameResult joinGameResult =
+                gameService.joinGame(new Requests.JoinGameRequest(newAuth,ChessGame.TeamColor.WHITE,createGameResult.gameID()));
 
         Assertions.assertEquals(joinGameResult.code(), 403);
         ArrayList<GameData> expectedGames = new ArrayList<>();

@@ -36,18 +36,6 @@ public class MemoryUserDao implements UserDaoInterface {
     };
 
     @Override
-    public void deleteUser(String username) throws DataAccessException {
-        for (UserData user : this.users) {
-            if (user.username().equals(username)) {
-                this.users.remove(user);
-                this.usernames.remove(user.username());
-                return;
-            }
-        }
-        throw new BadDataRequestException("This username does not exist.");
-    };
-
-    @Override
     public void deleteAllUsers() {
         this.users.clear();
         this.usernames.clear();

@@ -33,6 +33,12 @@ public class ChessPosition {
         return this.col;
     }
 
+    public boolean inRange() {
+        boolean bool1 = this.col <= 8 && this.col >= 1;
+        boolean bool2 = this.row <= 8 && this.row >= 1;
+        return bool1 && bool2;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {

@@ -11,8 +11,6 @@ public interface AuthDaoInterface {
 
     AuthData getAuth(String authToken) throws DataAccessException, BadDataRequestException;
 
-    void updateAuth(String authToken) throws DataAccessException, BadDataRequestException;
-
     void deleteAuth(String authToken) throws DataAccessException, BadDataRequestException;
 
     void deleteAllAuth() throws DataAccessException, BadDataRequestException;

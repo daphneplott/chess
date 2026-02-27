@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class KingMove {
-    private ArrayList<ChessMove> moves = new ArrayList<>();
+    private ArrayList<ChessMove> moves;
 
     record Pair(int x, int y) {}
 
@@ -25,11 +25,21 @@ public class KingMove {
                 new Pair(-1,0),new Pair(-1,1), new Pair(-1,-1),
                 new Pair(0,1), new Pair(0,-1)
         ));
+
+        moves = getMovesWithSpecificSubset(potentialMath,board,position,color);
+    }
+
+    public static ArrayList<ChessMove> getMovesWithSpecificSubset(
+            ArrayList<Pair> potentialMath,
+            ChessBoard board,
+            ChessPosition position,
+            ChessGame.TeamColor color) {
+        ArrayList<ChessMove> moves = new ArrayList<>();
         ChessPosition next;
         ChessPiece piece;
         for (Pair pair : potentialMath) {
-            if (position.getColumn() + pair.y() < 9 && position.getColumn() + pair.y() >0 &&
-                    position.getRow() + pair.x() < 9&& position.getRow()+pair.x() > 0
+            if (position.getColumn() + pair.y() < 9 && position.getColumn() + pair.y() > 0 &&
+                    position.getRow() + pair.x() < 9 && position.getRow() + pair.x() > 0
             ) {
                 next = new ChessPosition(position.getRow() + pair.x(), position.getColumn() + pair.y());
                 piece = board.getPiece(next);
@@ -38,7 +48,10 @@ public class KingMove {
                 }
             }
         }
+        return moves;
     }
+
+
     public ArrayList<ChessMove> getMoves() {
         return this.moves;
     }

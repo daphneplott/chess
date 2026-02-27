@@ -11,8 +11,6 @@ public interface UserDaoInterface {
 
     UserData getUser(String username) throws DataAccessException, BadDataRequestException;
 
-    void deleteUser(String username) throws DataAccessException, BadDataRequestException;
-
     void deleteAllUsers() throws DataAccessException, BadDataRequestException;
 
     ArrayList<String> getUsernames();
