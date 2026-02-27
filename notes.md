@@ -736,3 +736,82 @@ Unit tests are methods that compare a calculated result to an expected result. E
 
 A test driver is a program that runs all the tests, and gives you a report. You can use the framework Junit to create a test driver. Use Assertions.assertTrue(stuff), or assertEquals, assertFalse, assertThrows, assertArrayEquals, assertDoesNotThrow, assertNotEquals, assertHttpOk. Use decorator @Test above test cases, and don't put it above supporting methods. The tests should be nested inside a SomethingTest class. A lot of tests will have similar setup or objects, wo you can declare the variables in the class, and then tag a @BeforeAll method that can create all those objects, and an @AfterAll method that can clean up those objects (such as a server). Use @BeforeEach and @AfterEach to run in between each test, and potentially reset information.
 
+# Relational Databases
+
+Stores data, often lots of data in an efficient way. Structured so you can query it and update it. Handles multi-user access, catastrophic events, consistency.
+
+Relational models: tables, linked ids, storing different kinds of objects. Uses SQL (Structured Query Language) to operate on database. Other types of databases can hold other types of data models.
+
+Programmatic access - accessed using database APIs, and uses a database driver to work with the API; Interactive access - graphical interface for an end user.
+
+Embedded vs Client: Embedded is a single use database, such as persistent information for a downloaded app. Client is where multiple users need to access data, and go through the network and a server. 
+
+Table
+- A table is like a class
+- A row is like an object
+- An element is like a attribute
+- Relationships - uses primary and foreign keys
+
+Example - Book Club
+
+Member: id, name, email adress
+Book: id, title, author, genre, category id
+Books Read: member id, book id
+Genre: genre, description
+
+Primary key - unique identifiers for the rows in a certain table
+Foregin key - pointer/associated with a primary key from another table
+
+Representing Trees
+- A category name may be Top, Must Read (new, old, really old), Optional (new, old, really old)
+- Include a 'parent id' column that acts as a foreign key pointing to its own table
+
+Relationships
+- One to One - one column going to one other column. One person has one social security number, and that number shows up one place in a social security record
+- One to Many - one column connected to lots of other tables. A state has many counties, but a county only belongs to one state.
+- Many to Many - lots of columns connected to lots of other columns. A class contains many students, a student is in many classes. Need to create another table that records connections between students and classes (like enrollments).
+- Better to keep tables separate and use keys instead of putting everything together at once.
+- Can use entity relationship diagrams: draw lines that represent relationships. Use + at foreign key side, use o- or o< to denote One to One or One to Many. Trees will self reference.
+
+
+SQL Queries:
+- Select
+- From
+- Where
+
+SQL Data Types
+- Char(n) - fixed string length
+- VarChart() - varying string length
+- Integer, smallint, float, real, double precision, numeric(precision, scale), decimal(precision, scale)
+- BLOB - binary large objects (images, sound, video)
+- CLOB - character large object (text documents)
+- Date, teim, timetz, timestamp, timestamptz
+
+SQL Create
+- CREATE TABLE name
+- id integer not null primary key auto_increment, // Unique
+- title varchar(255) not null,
+- author varchar(255) not null,
+- foreign key(genre) references genre(genre),
+- foreign key(category_id) references category(id)
+- Can also use create table if not exists
+
+SQL insert
+- insert into book (title, author, genre, category_id) values ('The work','Gerald Lund','Historical fiction', 3);
+
+SQL Drop tables
+- drop table if exists book;
+- Table is gone, data is gone, it's just gone.
+- Can't delete a table with columns being used as foreign keys in another table, you have to delete that other table first.
+
+SQL updates
+- Update member
+- Set name = 'Christ Jones', email_adress = 'chris@gmail.com'
+- Where id = 3
+- If you don't include Where, it will affect everybody
+
+SQL Delete
+- Delete from book (cleans everything)
+- Delete from member
+- Where id = 3
+- Foreign key constraints will impact what order you can remove stuff from
