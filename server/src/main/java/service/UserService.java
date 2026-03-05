@@ -41,9 +41,8 @@ public class UserService {
 
     public Results.LoginResult login(Requests.LoginRequest request) {
         try {
-            String hashedPassword = BCrypt.hashpw(request.password(), BCrypt.gensalt());
             UserData user = userDao.getUser(request.username());
-            if (!user.password().equals(hashedPassword)) {
+            if (!BCrypt.checkpw(request.password(), user.password())) {
                 return new Results.LoginResult(401,null,null,"Error: unauthorized");
             }
             String authToken = UUID.randomUUID().toString();

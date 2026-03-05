@@ -45,9 +45,8 @@ public class GameService {
             return new Results.CreateGameResult(500,null, String.format("Error: %s",e.getMessage()));
         }
         try {
-            int gameID = gameDao.getGameID();
-            GameData game = new GameData(gameID,null,null,request.gameName(),new ChessGame());
-            gameDao.createGame(game);
+            GameData game = new GameData(0,null,null,request.gameName(),new ChessGame());
+            int gameID = gameDao.createGame(game);
             return new Results.CreateGameResult(200,gameID,null);
         } catch (DataAccessException e) {
             return new Results.CreateGameResult(500,null, String.format("Error: %s",e.getMessage()));

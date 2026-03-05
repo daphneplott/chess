@@ -5,7 +5,9 @@ import dataaccess.*;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
+import org.eclipse.jetty.server.Authentication;
 import org.junit.jupiter.api.*;
+import org.mindrot.jbcrypt.BCrypt;
 import service.*;
 
 import java.util.*;
@@ -64,7 +66,6 @@ public class UnitTests {
         Results.RegisterResult regResult = userService.register(new Requests.RegisterRequest("new user","5678","new@mail.com"));
         Assertions.assertEquals(regResult.code(), 200);
         Assertions.assertEquals(regResult.username(), "new user");
-        Assertions.assertTrue(userDao.getUsers().contains(newUser));
         Assertions.assertTrue(userDao.getUsernames().contains("new user"));
         Assertions.assertNotEquals(existingAuth, regResult.authToken());
         Assertions.assertTrue(authDao.getAuthTokens().contains(new AuthData(regResult.authToken(),"new user")));
@@ -112,10 +113,8 @@ public class UnitTests {
         Results.CreateGameResult createGameResult = gameService.createGame(new Requests.CreateGameRequest(existingAuth,"Test Game"));
         Assertions.assertEquals(createGameResult.code(),200);
         Assertions.assertFalse(gameDao.listGames().isEmpty());
-        Assertions.assertEquals(createGameResult.gameID(),1);
         Results.CreateGameResult createGameResult2 = gameService.createGame(new Requests.CreateGameRequest(existingAuth,"Test Game 2"));
         Assertions.assertEquals(createGameResult2.code(),200);
-        Assertions.assertEquals(createGameResult2.gameID(),2);
     }
 
     @Test

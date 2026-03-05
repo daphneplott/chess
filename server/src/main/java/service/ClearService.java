@@ -22,7 +22,6 @@ public class ClearService {
             userDao.deleteAllUsers();
             gameDao.deleteAllGames();
             authDao.deleteAllAuth();
-            gameDao.resetGameID();
             return new Results.ClearResult(200,"");
         } catch (DataAccessException e) {
             return new Results.ClearResult(500,e.getMessage());

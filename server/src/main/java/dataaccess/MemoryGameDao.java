@@ -15,8 +15,10 @@ public class MemoryGameDao implements GameDaoInterface {
     }
 
     @Override
-    public void createGame(GameData game) {
-        games.add(game);
+    public int createGame(GameData game) {
+        gameID += 1;
+        games.add(new GameData(gameID-1,game.whiteUsername(),game.blackUsername(),game.gameName(),game.game()));
+        return gameID - 1;
     };
 
     @Override
@@ -61,21 +63,11 @@ public class MemoryGameDao implements GameDaoInterface {
     @Override
     public void deleteAllGames() {
         games.clear();
+        gameID = 1;
     };
 
     @Override
     public ArrayList<GameData> listGames() {
         return games;
     };
-
-    @Override
-    public int getGameID() {
-        gameID += 1;
-        return gameID - 1;
-    }
-
-    @Override
-    public void resetGameID() {
-        gameID = 1;
-    }
 }
