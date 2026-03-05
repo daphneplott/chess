@@ -773,12 +773,6 @@ Relationships
 - Better to keep tables separate and use keys instead of putting everything together at once.
 - Can use entity relationship diagrams: draw lines that represent relationships. Use + at foreign key side, use o- or o< to denote One to One or One to Many. Trees will self reference.
 
-
-SQL Queries:
-- Select
-- From
-- Where
-
 SQL Data Types
 - Char(n) - fixed string length
 - VarChart() - varying string length
@@ -815,3 +809,122 @@ SQL Delete
 - Delete from member
 - Where id = 3
 - Foreign key constraints will impact what order you can remove stuff from
+
+## SQL Queries:
+General structure
+- Select columns
+- From table 
+- Where conditions
+
+With multiple tables:
+- Select member.name, book.title
+- From member, books_read, book
+
+This query creates a cartesian product, which is way too large. What we probably intend is to include this:
+- Where member.id = books_read.member_id AND book.id = books_read.book_id
+
+Using Joins:
+- From member
+- Inner Join books_read ON member_id = books_read.member_id
+- Inner Join books ON books_read.book_id = book.id
+
+Different types of joins:
+- Inner join has no nulls
+- Left join has no null from left value
+- Right join has no null from right value
+- Outer join includes nulls from both
+
+Transactions
+- When you are updating multiple databases, there can be issues if you don't do them together - such as one transaction goes through first, but then the system crashes and you don't get the other (such as moving money in a bank account)
+- We want to make sure that if there's a crash, everything gets undone
+- Statements that all succeed together, or all fail together
+
+Example Transaction
+- Begin Transaction;
+- statement 1;
+- statement 2;
+- Commit transaction; or Rollback Transaction;
+
+## Java DataBase Connection
+Called JDBC. Interfaces and classes that lets us use databases. First start by loading a database driver, which is a set of classes written by the database vendor that allows you to access that code from Java. Provides right interface and methods. Next open a connection to the database. Next start a transaction (if applicable), and execute queries or updates. Then either commit or rollback the transaction. Remember to close the connection when you are done. One of the instance variables of your object will be keeping track of the primary key, which may be updated weirdly in the database access. So the final step is to retrieve that auto-incremented value (which you do before you close connection).
+
+Making the Driver available - 3 options
+- Add dependency from file / project structure
+- Create a maven project and add the dependency to your pom.xml file
+- Create a Gradle project and add the dependency to your build.gradle file
+
+Loading the Driver 
+- try { Class.forName("org.sqlite.JDBC"); } catch(ClassNotFoundException e) {throw error}
+- Modern drivers don't require this anymore
+- Modern drivers are loaded automatically when you make a connection
+- try ( Connection c = DriverManager.getConnection(connentionURL) ) { connection = c; // start transaction // connection.setAutoCommit(false); }
+- catch(SQLException ex) { throw error }
+- finally { close c }
+- DON'T FORGOT TO CLOSE CONNECTION (this uses a try-with-resources statement)
+
+Executing a query
+- List<Book> books = new ArrayList<>();
+- String sql = "select id, title, author, genre, category_id from book";
+- try( PreparedStatement smt = connection.prepareStatement(sql); ResultSet rs = stmt.executeEquiry())
+- { while (rs.next()) {
+-   int id = rs.getInt(1);
+-   String title = rs.getString(2);
+-   String author = rs.getString('author'); ... etc
+-   books.add(new Book(id, title, author ...)); } }
+-   catch(SQLException ex) { do something }
+- STARTS AT COLUMN 1
+- Column numbers refer to order given in Select statement
+
+Executing Insert, Update, and Delete statements
+- String sql = "update book" + "set title = ?, author = ?, genre = ?, category_id = ?" + "where id = ?"
+- String sql = "insert into book (title, author, genre, category_id) values (? ? ? ?)"
+- try(PreparedStatement stmt = connection.prepareStatment(sql)) {
+-   stmt.setString(1, book.getTitle());
+-   stmt.setString(2, book.getAuthor()); ... etc, setting ?'s, use setInt where applicable
+-   if (stmt.executeUpdate() == 1) {effected 1 row} else {effected not 1 row}
+- Insert and delete also use executeUpdate() method
+- Return a number indicating number of rows affected
+
+Why do we use the weird question marks?
+- SQL injection attacks!
+- The question marks sanitize database inputs
+- All statements (as long as separated by ;) will execute
+- If getting input from a form, a user can end the statement '); and then include another SQL statement to get what they want, and then write -- to comment out the rest
+- When you use ?/set method, the input will end up being quoted, which will be a weird string, not a sql command
+
+Retrieving Auto-Increment Primary Keys
+- PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
+- This way, the result set with return the primary key
+- if(stmt.executeUpdate() == ) {
+-   try(ResultSet.generatedKeys = stmt.getGeneratedKeys()) {
+-   generatedKeys.next()
+-   int id = generatedKeys.getInt(1);
+-   book.setId(id); } }
+- Result Set objects start before the table, so you always need to do .next() before accessing the first one
+
+Ending Transactions
+- try(Connection ... ) { connection ... connection.commit(); }
+- catch(SQLException ex) {
+-   if (connection != null && !connection.isClosed()) {connection.rollback();}
+-   throw exception;
+
+Usernames, Passwords, and Permissions
+- connectionURL = "jdbc:mysql://localhost:3306/BookClub?" + "user = username & password = password";
+- Include username and password from a git ignore file
+- Create User 'username'@'localhost' Identified By 'mypassword'; Grant All on BookClub.* to 'username'@'localhost';
+
+Putting it all together:
+- sql = "Alter Table book AUTO_INCREMENT = 1";
+- If you want statements to be in the same transaction, they have to be in the same connection
+- use setAutoCommit(false) to turn off auto commit after each statement
+
+Unit Testing DataBase code
+- Don't have any tests leave any effects for the next tests
+- Recreate tables before each test, use BeforeEach to clear out database
+- Or, create the transaction in the BeforeEach, and rollback transaction AfterEach
+- If there's a lot of setup in each test, you definetly want to use the second option
+- Open the connection BeforeAll, and don't close connection until AfterAll
+- Or open and close before and after each, but just make sure to close database connection in before each if you fill it or set it up
+- Can't have multiple connections open at once
+
+
