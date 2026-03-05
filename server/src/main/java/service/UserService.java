@@ -5,6 +5,7 @@ import model.AuthData;
 import model.GameData;
 import model.UserData;
 import org.eclipse.jetty.server.Authentication;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -21,7 +22,8 @@ public class UserService {
 
     public Results.RegisterResult register(Requests.RegisterRequest request) {
         try {
-            UserData user = new UserData(request.username(), request.password(), request.email());
+            String hashedPassword = BCrypt.hashpw(request.password(), BCrypt.gensalt());
+            UserData user = new UserData(request.username(), hashedPassword, request.email());
             userDao.createUser(user);
             String authToken = UUID.randomUUID().toString();
             while (authDao.getAuthValues().contains(authToken)) {
@@ -39,8 +41,9 @@ public class UserService {
 
     public Results.LoginResult login(Requests.LoginRequest request) {
         try {
+            String hashedPassword = BCrypt.hashpw(request.password(), BCrypt.gensalt());
             UserData user = userDao.getUser(request.username());
-            if (!user.password().equals(request.password())) {
+            if (!user.password().equals(hashedPassword)) {
                 return new Results.LoginResult(401,null,null,"Error: unauthorized");
             }
             String authToken = UUID.randomUUID().toString();

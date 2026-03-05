@@ -7,6 +7,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/java/passoff" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/java/service" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/java/dataaccess" isTestSource="true" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -16,5 +17,7 @@
     <orderEntry type="library" name="google.code.gson" level="project" />
     <orderEntry type="library" name="io.javalin" level="project" />
     <orderEntry type="library" name="slf4j.simple" level="project" />
+    <orderEntry type="library" name="mysql.connector.j" level="project" />
+    <orderEntry type="library" name="mindrot.jbcrypt" level="project" />
   </component>
 </module>
