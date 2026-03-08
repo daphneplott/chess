@@ -13,7 +13,7 @@ public interface UserDaoInterface {
 
     void deleteAllUsers() throws DataAccessException, BadDataRequestException;
 
-    ArrayList<String> getUsernames();
+    ArrayList<String> getUsernames() throws DataAccessException;
 
-    ArrayList<UserData> getUsers();
+    ArrayList<UserData> getUsers() throws DataAccessException;
 }
