@@ -12,4 +12,8 @@ public record GameData(int gameID, String whiteUsername, String blackUsername,
             return new GameData(gameID,whiteUsername,username,gameName,game);
         }
     }
+
+    public GameData setId(int id) {
+        return new GameData(id, whiteUsername,blackUsername,gameName,game);
+    }
 }
