@@ -15,8 +15,8 @@ public interface AuthDaoInterface {
 
     void deleteAllAuth() throws DataAccessException, BadDataRequestException;
 
-    ArrayList<AuthData> getAuthTokens();
+    ArrayList<AuthData> getAuthTokens() throws DataAccessException;
 
-    ArrayList<String> getAuthValues();
+    ArrayList<String> getAuthValues() throws DataAccessException;
 }
 

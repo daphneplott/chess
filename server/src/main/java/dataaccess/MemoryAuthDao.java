@@ -21,7 +21,7 @@ public class MemoryAuthDao implements AuthDaoInterface {
     };
 
     @Override
-    public AuthData getAuth(String authToken) throws DataAccessException {
+    public AuthData getAuth(String authToken) throws DataAccessException, BadDataRequestException {
         for (AuthData auth : authTokens) {
             if (auth.authToken().equals(authToken)) {
                 return auth;
