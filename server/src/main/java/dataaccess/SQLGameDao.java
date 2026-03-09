@@ -19,7 +19,7 @@ public class SQLGameDao implements GameDaoInterface {
     @Override
     public int createGame(GameData game) throws DataAccessException, BadDataRequestException {
         // Insert statement, return id
-        var statement = "INSERT INTO games (whiteUsername, blackUsername, gameName, json) VALUES (?, ?, ?, ?, ?)";
+        var statement = "INSERT INTO games (whiteUsername, blackUsername, gameName, json) VALUES (?, ?, ?, ?)";
         String json = new Gson().toJson(game.game());
         int id = executeUpdate(statement, game.whiteUsername(),game.blackUsername(),game.gameName(),json);
         return id;
@@ -100,7 +100,7 @@ public class SQLGameDao implements GameDaoInterface {
     };
 
     private GameData readGame(ResultSet rs) throws SQLException {
-        var id = rs.getInt("id");
+        var id = rs.getInt("gameID");
         var json = rs.getString("json");
         GameData game = new Gson().fromJson(json, GameData.class);
         return game.setId(id);

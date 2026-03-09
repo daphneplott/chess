@@ -9,7 +9,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Array;
+import javax.print.attribute.standard.PrinterMoreInfoManufacturer;
 import java.util.ArrayList;
 
 public class DataAccessTests {
@@ -22,15 +22,18 @@ public class DataAccessTests {
     AuthData authData = new AuthData("1234","new user");
     UserData copyUser = new UserData("new user", "a", "cool@mail.com");
     AuthData badAuthData = new AuthData(null,"new user");
-    GameData game = new GameData(0,null,null,"Test Game",new ChessGame());
-    GameData game2 = new GameData(1,"new user",null,"Test Game2",new ChessGame());
-    GameData game3 = new GameData(0,null,null,null,new ChessGame());
+    GameData game = new GameData(1,null,null,"Test Game",new ChessGame());
+    GameData game2 = new GameData(2,"new user",null,"Test Game2",new ChessGame());
+    GameData game3 = new GameData(1,null,null,null,new ChessGame());
 
     @BeforeAll
     public static void setUp() {
         try {
+            System.out.println(1);
             authDao = new SQLAuthDao();
+            System.out.println(2);
             gameDao = new SQLGameDao();
+            System.out.println(3);
             userDao = new SQLUserDao();
         } catch (Exception e) {
             System.out.println("Could not configure");
@@ -50,9 +53,27 @@ public class DataAccessTests {
         }
     }
 
-    // Game - Create/, get, update/, delete all/, list/
-    // User - Create/, get/, delete all/, get usernames, get users
-    // Auth - Create/, delete/, delete all/, get authTokens, get auth/
+    // Game - Create/, get/, update/, delete all/, list/
+    // User - Create/, get/, delete all/, get usernames/, get users/
+    // Auth - Create/, delete/, delete all/, get authTokens/, get auth/
+
+    @Test
+    public void getUsernamesSuccess() {}
+
+    @Test
+    public void getUsernamesFailure() {}
+
+    @Test
+    public void getUsersSuccess() {}
+
+    @Test
+    public void getUsersFailure() {}
+
+    @Test
+    public void getAuthTokensSuccess() {}
+
+    @Test
+    public void getAuthTokensFailure() {}
 
     @Test
     public void clearGameSuccess() throws DataAccessException {
@@ -85,6 +106,10 @@ public class DataAccessTests {
         try {
             Assertions.assertEquals(authDao.getAuthTokens(), new ArrayList<AuthData>());
         } catch (DataAccessException e) {Assertions.assertTrue(false);}
+        catch (Exception e) {
+            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
@@ -223,7 +248,9 @@ public class DataAccessTests {
     public void createGameSuccess() throws DataAccessException {
         int id = gameDao.createGame(game);
         Assertions.assertFalse(gameDao.listGames().isEmpty());
-        Assertions.assertEquals(0,id);
+        System.out.println("ID");
+        System.out.println(id);
+        Assertions.assertEquals(1,id);
     }
 
     @Test
@@ -236,16 +263,33 @@ public class DataAccessTests {
     }
 
     @Test
+    public void getGameSuccess() throws DataAccessException {
+        int id = gameDao.createGame(game);
+        GameData actual = gameDao.getGame(id);
+        Assertions.assertEquals(game,actual);
+    }
+
+    @Test
+    public void getGameFailure() throws DataAccessException {
+        int id = gameDao.createGame(game);
+        try {
+            GameData actual = gameDao.getGame(id + 1);
+        } catch (BadDataRequestException e) {
+            Assertions.assertTrue(true);
+        }
+    }
+
+    @Test
     public void listGamesSuccess() throws DataAccessException {
         gameDao.createGame(game);
 
         ArrayList<GameData> actualGames = gameDao.listGames();
         ArrayList<GameData> expectedGames = new ArrayList<>();
-        expectedGames.add(new GameData(0,null,null,"Test Game",new ChessGame()));
+        expectedGames.add(new GameData(1,null,null,"Test Game",new ChessGame()));
         Assertions.assertEquals(expectedGames,actualGames);
 
         gameDao.createGame(game2);
-        expectedGames.add(new GameData(1, "new user",null,"Test Game2",new ChessGame()));
+        expectedGames.add(new GameData(2, "new user",null,"Test Game2",new ChessGame()));
         actualGames = gameDao.listGames();
         Assertions.assertEquals(expectedGames,actualGames);
     }
@@ -261,12 +305,12 @@ public class DataAccessTests {
     public void updateGameSuccess() throws DataAccessException {
         gameDao.createGame(game);
         try {
-            gameDao.updateGame(ChessGame.TeamColor.WHITE,"new user",0);
+            gameDao.updateGame(ChessGame.TeamColor.WHITE,"new user",1);
         } catch (BadDataRequestException e) {
             throw new RuntimeException(e);
         }
         ArrayList<GameData> expectedGames = new ArrayList<>();
-        expectedGames.add(new GameData(0,"new user",null,"Test Game",new ChessGame()));
+        expectedGames.add(new GameData(1,"new user",null,"Test Game",new ChessGame()));
         Assertions.assertEquals(gameDao.listGames(), expectedGames);
     }
 
@@ -274,12 +318,12 @@ public class DataAccessTests {
     public void updateGameFailure() throws DataAccessException {
         gameDao.createGame(game2);
         try {
-            gameDao.updateGame(ChessGame.TeamColor.WHITE,"other user",0);
+            gameDao.updateGame(ChessGame.TeamColor.WHITE,"other user",1);
         } catch (BadDataRequestException e) {
             Assertions.assertTrue(true);
         }
         ArrayList<GameData> expectedGames = new ArrayList<>();
-        expectedGames.add(new GameData(0,"new user",null,"Test Game",new ChessGame()));
+        expectedGames.add(new GameData(1,"new user",null,"Test Game",new ChessGame()));
         Assertions.assertEquals(gameDao.listGames(), expectedGames);
     }
 };

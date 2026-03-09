@@ -19,7 +19,7 @@ public class SQLAuthDao implements AuthDaoInterface{
 
     @Override
     public void createAuth(AuthData auth) throws DataAccessException, BadDataRequestException {
-        var statement = "INSERT INTO auth (authToken, username) VALUES (?, ?, ?)";
+        var statement = "INSERT INTO auth (authToken, username, json) VALUES (?, ?, ?)";
         String json = new Gson().toJson(auth);
         executeUpdate(statement, auth.authToken(), auth.username(),json);
     };
@@ -46,7 +46,7 @@ public class SQLAuthDao implements AuthDaoInterface{
 
     @Override
     public void deleteAuth(String authToken) throws DataAccessException, BadDataRequestException {
-        var statement = "DELETE FROM auth WHERE id = ?";
+        var statement = "DELETE FROM auth WHERE authToken = ?";
         executeUpdate(statement, authToken);
     };
 
@@ -104,7 +104,7 @@ public class SQLAuthDao implements AuthDaoInterface{
                 `authToken` varchar(256) NOT NULL,
                 `username` varchar(256) NOT NULL,
                 `json` varchar(256) NOT NULL,
-                PRIMARY KEY (`authToken`),
+                PRIMARY KEY (`authToken`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };
@@ -121,19 +121,27 @@ public class SQLAuthDao implements AuthDaoInterface{
                 ps.executeUpdate();
             }
         } catch (SQLException e) {
-            throw new DataAccessException(String.format("unable to update database: %s, %x", statement, e.getMessage()));
+            throw new DataAccessException(String.format("unable to update database: %s, %s", statement, e.getMessage()));
         }
     };
 
     private void configureDatabase() throws DataAccessException {
+        System.out.println(4);
         DatabaseManager.createDatabase();
+        System.out.println(5);
         try (Connection conn = DatabaseManager.getConnection()) {
+            System.out.println(6);
             for (String statement : createStatements) {
+                System.out.println(7);
                 try (var preparedStatement = conn.prepareStatement(statement)) {
+                    System.out.println(8);
                     preparedStatement.executeUpdate();
+                    System.out.println(9);
                 }
             }
         } catch (SQLException e) {
+            System.out.println(10);
+            System.out.println(e.getMessage());
             throw new DataAccessException(String.format("Unable to configure database: %s", e.getMessage()));
         }
     };
