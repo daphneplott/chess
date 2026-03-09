@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.print.attribute.standard.PrinterMoreInfoManufacturer;
+import java.sql.Array;
 import java.util.ArrayList;
 
 public class DataAccessTests {
@@ -54,13 +55,25 @@ public class DataAccessTests {
     // User - Create/, get/, delete all/, get usernames/, get users/
     // Auth - Create/, delete/, delete all/, get authTokens/, get auth/
 
-    @Test
-    public void getUsernamesSuccess() {
+    private void getUserStuffSetUp() {
         try {
             userDao.createUser(newUser);
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void getAuthStuffSetUp() {
+        try {
+            authDao.createAuth(authData);
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    public void getUsernamesSuccess() {
+        getUserStuffSetUp();
         try {
             Assertions.assertTrue(userDao.getUsernames().contains("new user"));
         } catch (DataAccessException e) {Assertions.assertTrue(false);};
@@ -68,11 +81,7 @@ public class DataAccessTests {
 
     @Test
     public void getUsernamesFailure() throws DataAccessException {
-        try {
-            userDao.createUser(newUser);
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
+        getUserStuffSetUp();
         try {
             userDao.createUser(copyUser);
         } catch (BadDataRequestException e) {
@@ -87,11 +96,7 @@ public class DataAccessTests {
 
     @Test
     public void getUsersSuccess() throws DataAccessException {
-        try {
-            userDao.createUser(newUser);
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
+        getUserStuffSetUp();
         ArrayList<UserData> users = new ArrayList<>();
         users.add(newUser);
         Assertions.assertEquals(userDao.getUsers(), users);
@@ -99,17 +104,11 @@ public class DataAccessTests {
 
     @Test
     public void getUsersFailure() throws DataAccessException {
-        try {
-            userDao.createUser(newUser);
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
+        getUserStuffSetUp();
         try {
             userDao.createUser(copyUser);
         } catch (BadDataRequestException e) {
             Assertions.assertTrue(true);
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
         }
         ArrayList<UserData> users = new ArrayList<>();
         users.add(newUser);
@@ -118,11 +117,7 @@ public class DataAccessTests {
 
     @Test
     public void getAuthTokensSuccess() {
-        try {
-            authDao.createAuth(authData);
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
+        getAuthStuffSetUp();
         try {
             Assertions.assertTrue(authDao.getAuthTokens().contains(authData));
         } catch (DataAccessException e) {Assertions.assertTrue(false);};
@@ -131,15 +126,11 @@ public class DataAccessTests {
     @Test
     public void getAuthTokensFailure() throws DataAccessException {
         try {
-            authDao.createAuth(authData);
+            ArrayList<AuthData> actual = authDao.getAuthTokens();
+            Assertions.assertEquals(new ArrayList<AuthData>(), actual);
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
-        try {
-            AuthData actual = authDao.getAuth("123");
-        } catch (BadDataRequestException e) {
-            Assertions.assertTrue(true);
-        };
     }
 
     @Test
@@ -182,11 +173,7 @@ public class DataAccessTests {
 
     @Test
     public void createUserSuccess() {
-        try {
-            userDao.createUser(newUser);
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
+        getUserStuffSetUp();
         try {
             Assertions.assertTrue(userDao.getUsernames().contains("new user"));
         } catch (DataAccessException e) {Assertions.assertTrue(false);};
@@ -194,11 +181,7 @@ public class DataAccessTests {
 
     @Test
     public void createAuthSuccess() {
-        try {
-            authDao.createAuth(authData);
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
+        getAuthStuffSetUp();
         try {
             Assertions.assertTrue(authDao.getAuthTokens().contains(authData));
         } catch (DataAccessException e) {Assertions.assertTrue(false);};
@@ -206,11 +189,7 @@ public class DataAccessTests {
 
     @Test
     public void createUserFailure() {
-        try {
-            userDao.createUser(newUser);
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
+        getUserStuffSetUp();
         try {
             userDao.createUser(copyUser);
         } catch (BadDataRequestException e) {
