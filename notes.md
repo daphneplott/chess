@@ -927,4 +927,75 @@ Unit Testing DataBase code
 - Or open and close before and after each, but just make sure to close database connection in before each if you fill it or set it up
 - Can't have multiple connections open at once
 
+# Programming Practices
+
+## Logging
+
+Software is a black box to the people that use it. Even for developers, they don't always have a lot of visibility. We can keep a record of everything interesting that happens in our program. We can log requests, user information, errors, exceptions, everything. Keep the record in a file or a database somewhere. Then, when something bad happens (or just out of curiousity) you can look at the log to see what has been happening, what users do, what might be going wrong. It can be used for costumer support or finding errors. The log has string messages, and then attached metadata. What type of message - severe, warning, info, finest; time and date; thread id (if multiple systems are running). You often won't know the value of your logs until it's too late, and you needed them ... earlier.
+
+Cloud software: often need to use logs because you can't attach a debugger to a cloud program. 
+
+Can use tools to monitor and watch the log messages, and send alerts if it sees anything weird. 
+
+Java has logging built into it:
+- Logger logger = Logger.getLogger("Hardcoded name");
+- can have more than one log files
+- FileHandler fileHandler = new FileHandler("file.log", true);
+- logger.addHandler(fileHandler);
+- can add multiple handlers to send the log to multiple places (or consoles, or other servers)
+- logger.setLevel(Level.INFO); // Listens to all logs above INFO, ie, not debugging
+- var msg = some sort of string creation;
+- logger.log(Level.INFO, msg); // or
+- logger.finest(msg); // thrown away if below Level, doesn't need to be deleted
+- can write your own handler, such as sending logs to a sql database
+
+## Defensive Programming
+
+Write your code so that bugs are detected quickly and will not propagate. Like unit testing, you don't have to look very far to find where the bug came from.
+
+Assertions
+- We may be making assumptions about the state of the program at certain points
+- A variable's value is in a particular range, a file exists, is writable, is open, data is sorted, a network connection was successfully opened, certain things aren't null
+- The correctness of our code depends on the validity of our assumption
+- Assertions let us put our assumptions into the code to verify them
+- If an assumption becomes not correct, it will crash the program with an AssertionError!
+- Really only done during development time, statements are turned off for production
+- "assert temperature > 32 && temperatrue < 212;"
+- "assert boolean_condition : message ;"
+- Java uses command line -ea when running program to enable assertions (default is off): java -ea MyApp
+- Whenever a function is called, you might want to validate inputs
+- Whenever you make a fuzzy assumption
+
+Parameter Checking
+- Validate inputs before proceeding
+- If you don't catch bad input, it will propagate issues
+- Can use assertions
+- Can use if statements and throw
+- Use if statements if you want it to show up in production
+- If you or team are calling function, use assert, because it's internal
+- If other people are calling the code, and they can't necessarily fix their use, use the external boundary
+
+## Debugging
+
+It's our job to understand how the program works.
+- Structure, pieces, connections
+- How is it supposed to work?
+- Language, hardware and operating system
+
+You've encountered a bug. Now what?
+- Hypothesize error
+- Need a reproducible test case (seed random)
+- Simplify test case and make it as small as possible
+- Find the exact place where the bug occurred
+- Function call stack
+- Look at variable states
+- Take a break and get some sleep
+- Think at a higher level of abstraction
+- Get fresh eyes
+- Have AI look at it
+- Comment out pieces of the program, return hardcoded values
+- Read the code
+- **The Debugger**
+
+
 
