@@ -4,16 +4,13 @@ import chess.ChessGame;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
-import org.eclipse.jetty.server.Authentication;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import service.Requests;
-import service.Results;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.UUID;
 
 public class DataAccessTests {
 
@@ -27,7 +24,7 @@ public class DataAccessTests {
     AuthData badAuthData = new AuthData(null,"new user");
     GameData game = new GameData(0,null,null,"Test Game",new ChessGame());
     GameData game2 = new GameData(1,"new user",null,"Test Game2",new ChessGame());
-
+    GameData game3 = new GameData(0,null,null,null,new ChessGame());
 
     @BeforeAll
     public static void setUp() {
@@ -53,9 +50,9 @@ public class DataAccessTests {
         }
     }
 
-    // Game - Create, get, update, delete all/, list
+    // Game - Create/, get, update/, delete all/, list/
     // User - Create/, get/, delete all/, get usernames, get users
-    // Auth - Create/, delete/, delete all/, get authTokens, get auth
+    // Auth - Create/, delete/, delete all/, get authTokens, get auth/
 
     @Test
     public void clearGameSuccess() throws DataAccessException {
@@ -140,6 +137,34 @@ public class DataAccessTests {
     }
 
     @Test
+    public void getAuthSuccess() {
+        try {
+            authDao.createAuth(authData);
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            AuthData actual = authDao.getAuth("1234");
+            Assertions.assertEquals(authData, actual);
+        } catch (DataAccessException e) {
+            Assertions.fail();};
+    }
+
+    @Test
+    public void getAuthFailure() throws DataAccessException {
+        try {
+            authDao.createAuth(authData);
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            AuthData actual = authDao.getAuth("123");
+        } catch (BadDataRequestException e) {
+            Assertions.assertTrue(true);
+        };
+    }
+
+    @Test
     public void deleteAuthSuccess() throws DataAccessException {
         authDao.createAuth(authData);
 
@@ -174,7 +199,7 @@ public class DataAccessTests {
     }
 
     @Test
-    public void getUserSucess() throws DataAccessException {
+    public void getUserSuccess() throws DataAccessException {
         userDao.createUser(newUser);
         try {
             UserData actual = userDao.getUser("new user");
@@ -203,7 +228,11 @@ public class DataAccessTests {
 
     @Test
     public void createGameFailure() throws DataAccessException {
-        // I ... don't know what might fail...
+        try {
+            gameDao.createGame(game3);
+        } catch (DataAccessException e) {
+            Assertions.assertTrue(true);
+        }
     }
 
     @Test
@@ -223,36 +252,34 @@ public class DataAccessTests {
 
     @Test
     public void listGamesFailure() throws DataAccessException {
-        // Also no idea...
+        ArrayList<GameData> expected = new ArrayList<>();
+        ArrayList<GameData> actual = gameDao.listGames();
+        Assertions.assertEquals(expected,actual);
     }
 
     @Test
     public void updateGameSuccess() throws DataAccessException {
-        Results.CreateGameResult createGameResult =
-                gameService.createGame(new Requests.CreateGameRequest(existingAuth,"Test Game"));
-        Results.JoinGameResult joinGameResult =
-                gameService.joinGame(new Requests.JoinGameRequest(existingAuth, ChessGame.TeamColor.WHITE, createGameResult.gameID()));
-        Assertions.assertEquals(joinGameResult.code(), 200);
+        gameDao.createGame(game);
+        try {
+            gameDao.updateGame(ChessGame.TeamColor.WHITE,"new user",0);
+        } catch (BadDataRequestException e) {
+            throw new RuntimeException(e);
+        }
         ArrayList<GameData> expectedGames = new ArrayList<>();
-        expectedGames.add(new GameData(1,"existing user",null,"Test Game",new ChessGame()));
+        expectedGames.add(new GameData(0,"new user",null,"Test Game",new ChessGame()));
         Assertions.assertEquals(gameDao.listGames(), expectedGames);
     }
 
     @Test
-    public void joinGameFailure() throws DataAccessException {
-        Results.CreateGameResult createGameResult = gameService.createGame(new Requests.CreateGameRequest(existingAuth,"Test Game"));
-        gameService.joinGame(new Requests.JoinGameRequest(existingAuth, ChessGame.TeamColor.WHITE, createGameResult.gameID()));
-
-        Results.RegisterResult regResult =
-                userService.register(new Requests.RegisterRequest("new user","5678","new@mail.com"));
-        String newAuth = regResult.authToken();
-
-        Results.JoinGameResult joinGameResult =
-                gameService.joinGame(new Requests.JoinGameRequest(newAuth,ChessGame.TeamColor.WHITE,createGameResult.gameID()));
-
-        Assertions.assertEquals(joinGameResult.code(), 403);
+    public void updateGameFailure() throws DataAccessException {
+        gameDao.createGame(game2);
+        try {
+            gameDao.updateGame(ChessGame.TeamColor.WHITE,"other user",0);
+        } catch (BadDataRequestException e) {
+            Assertions.assertTrue(true);
+        }
         ArrayList<GameData> expectedGames = new ArrayList<>();
-        expectedGames.add(new GameData(1,"existing user",null,"Test Game",new ChessGame()));
+        expectedGames.add(new GameData(0,"new user",null,"Test Game",new ChessGame()));
         Assertions.assertEquals(gameDao.listGames(), expectedGames);
     }
 };
