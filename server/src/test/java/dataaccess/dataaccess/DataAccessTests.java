@@ -55,22 +55,92 @@ public class DataAccessTests {
     // Auth - Create/, delete/, delete all/, get authTokens/, get auth/
 
     @Test
-    public void getUsernamesSuccess() {}
+    public void getUsernamesSuccess() {
+        try {
+            userDao.createUser(newUser);
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            Assertions.assertTrue(userDao.getUsernames().contains("new user"));
+        } catch (DataAccessException e) {Assertions.assertTrue(false);};
+    }
 
     @Test
-    public void getUsernamesFailure() {}
+    public void getUsernamesFailure() throws DataAccessException {
+        try {
+            userDao.createUser(newUser);
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            userDao.createUser(copyUser);
+        } catch (BadDataRequestException e) {
+            Assertions.assertTrue(true);
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+        ArrayList<String> users = new ArrayList<>();
+        users.add(newUser.username());
+        Assertions.assertEquals(userDao.getUsernames(), users);
+    }
 
     @Test
-    public void getUsersSuccess() {}
+    public void getUsersSuccess() throws DataAccessException {
+        try {
+            userDao.createUser(newUser);
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+        ArrayList<UserData> users = new ArrayList<>();
+        users.add(newUser);
+        Assertions.assertEquals(userDao.getUsers(), users);
+    }
 
     @Test
-    public void getUsersFailure() {}
+    public void getUsersFailure() throws DataAccessException {
+        try {
+            userDao.createUser(newUser);
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            userDao.createUser(copyUser);
+        } catch (BadDataRequestException e) {
+            Assertions.assertTrue(true);
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+        ArrayList<UserData> users = new ArrayList<>();
+        users.add(newUser);
+        Assertions.assertEquals(userDao.getUsers(), users);
+    }
 
     @Test
-    public void getAuthTokensSuccess() {}
+    public void getAuthTokensSuccess() {
+        try {
+            authDao.createAuth(authData);
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            Assertions.assertTrue(authDao.getAuthTokens().contains(authData));
+        } catch (DataAccessException e) {Assertions.assertTrue(false);};
+    }
 
     @Test
-    public void getAuthTokensFailure() {}
+    public void getAuthTokensFailure() throws DataAccessException {
+        try {
+            authDao.createAuth(authData);
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            AuthData actual = authDao.getAuth("123");
+        } catch (BadDataRequestException e) {
+            Assertions.assertTrue(true);
+        };
+    }
 
     @Test
     public void clearGameSuccess() throws DataAccessException {

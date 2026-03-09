@@ -29,9 +29,8 @@ public class UnitTests {
     @BeforeAll
     public static void init() throws DataAccessException {
 
-//        gameDao = new MemoryGameDao();
-//        userDao = new MemoryUserDao();
-//        authDao = new MemoryAuthDao();
+//        THIS IMPLEMENTATION HARDCODES IN SQL DAOS
+        // If you would like to use memory daos, you've gots to change it.
 
         gameDao = new SQLGameDao();
         userDao = new SQLUserDao();
