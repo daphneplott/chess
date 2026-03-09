@@ -31,6 +31,7 @@ public class DatabaseTests {
         System.out.println("Started test HTTP server on " + port);
 
         serverFacade = new TestServerFacade("localhost", Integer.toString(port));
+        System.out.println("Made it to 2");
     }
 
     @BeforeEach
@@ -48,6 +49,7 @@ public class DatabaseTests {
     @DisplayName("Persistence Test")
     @Order(1)
     public void persistenceTest() {
+        System.out.println("Made it to 3");
         int initialRowCount = getDatabaseRows();
 
         TestAuthResult regResult = serverFacade.register(TEST_USER);

@@ -53,12 +53,18 @@ public class UnitTests {
     @Test
     public void clearSuccess() {
         Results.ClearResult result = clearService.clear();
-        Assertions.assertEquals(authDao.getAuthTokens(),new ArrayList<AuthData>());
+        try {
+            Assertions.assertEquals(authDao.getAuthTokens(), new ArrayList<AuthData>());
+        } catch (DataAccessException e) {Assertions.assertTrue(false);}
         try {
             Assertions.assertEquals(gameDao.listGames(), new ArrayList<>());
         } catch (DataAccessException e) {Assertions.assertTrue(false);}
-        Assertions.assertEquals(userDao.getUsers(), new ArrayList<>());
-        Assertions.assertEquals(userDao.getUsernames(), new ArrayList<>());
+        try {
+            Assertions.assertEquals(userDao.getUsers(), new ArrayList<>());
+        }catch (DataAccessException e) {Assertions.assertTrue(false);}
+        try {
+            Assertions.assertEquals(userDao.getUsernames(), new ArrayList<>());
+        }catch (DataAccessException e) {Assertions.assertTrue(false);}
     }
 
     @Test
@@ -66,9 +72,13 @@ public class UnitTests {
         Results.RegisterResult regResult = userService.register(new Requests.RegisterRequest("new user","5678","new@mail.com"));
         Assertions.assertEquals(regResult.code(), 200);
         Assertions.assertEquals(regResult.username(), "new user");
-        Assertions.assertTrue(userDao.getUsernames().contains("new user"));
+        try {
+            Assertions.assertTrue(userDao.getUsernames().contains("new user"));
+        } catch (DataAccessException e) {Assertions.assertTrue(false);};
         Assertions.assertNotEquals(existingAuth, regResult.authToken());
-        Assertions.assertTrue(authDao.getAuthTokens().contains(new AuthData(regResult.authToken(),"new user")));
+        try {
+            Assertions.assertTrue(authDao.getAuthTokens().contains(new AuthData(regResult.authToken(),"new user")));
+        } catch (DataAccessException e) {Assertions.assertTrue(false);};
     }
 
     @Test
@@ -81,7 +91,9 @@ public class UnitTests {
     public void logoutSuccess() {
         Results.LogoutResult logoutResult = userService.logout(new Requests.LogoutRequest(existingAuth));
         Assertions.assertEquals(logoutResult.code(), 200);
-        Assertions.assertEquals(authDao.getAuthTokens(),new ArrayList<AuthData>());
+        try {
+            Assertions.assertEquals(authDao.getAuthTokens(),new ArrayList<AuthData>());
+        }catch (DataAccessException e) {Assertions.assertTrue(false);};
     }
 
     @Test
@@ -97,7 +109,9 @@ public class UnitTests {
         userService.logout(new Requests.LogoutRequest(existingAuth));
         Results.LoginResult loginResult = userService.login(new Requests.LoginRequest("existing user","1234"));
         Assertions.assertEquals(loginResult.code(),200);
-        Assertions.assertTrue(authDao.getAuthValues().contains(loginResult.authToken()));
+        try {
+            Assertions.assertTrue(authDao.getAuthValues().contains(loginResult.authToken()));
+        } catch (DataAccessException e) {Assertions.assertTrue(false);}
     }
 
     @Test
@@ -105,7 +119,9 @@ public class UnitTests {
         userService.logout(new Requests.LogoutRequest(existingAuth));
         Results.LoginResult loginResult = userService.login(new Requests.LoginRequest("existing user","123"));
         Assertions.assertEquals(loginResult.code(),401);
-        Assertions.assertTrue(authDao.getAuthValues().isEmpty());
+        try {
+            Assertions.assertTrue(authDao.getAuthValues().isEmpty());
+        } catch (DataAccessException e) {Assertions.assertTrue(false);}
     }
 
     @Test
