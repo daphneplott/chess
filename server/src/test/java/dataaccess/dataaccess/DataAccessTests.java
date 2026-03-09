@@ -101,8 +101,9 @@ public class DataAccessTests {
         authDao.createAuth(authData);
         authDao.deleteAllAuth();
         try {
-            Assertions.assertEquals(authDao.getAuthTokens(), new ArrayList<AuthData>());
-        } catch (DataAccessException e) {Assertions.assertTrue(false);}
+            Assertions.assertEquals(new ArrayList<AuthData>(), authDao.getAuthTokens());
+        } catch (DataAccessException e) {
+            Assertions.fail();}
         catch (Exception e) {
             System.out.println(e.getMessage());
             throw new RuntimeException(e);

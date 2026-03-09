@@ -20,8 +20,13 @@ public class Server {
     private final ClearService clearService;
     private Gson gson;
 
+//    public Server() {
+//        new Server(false);
+//    }
 
     public Server() {
+        Boolean memory = false;
+
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
         javalin.post("/user",this::register);
         javalin.post("/session", this::login);
@@ -31,9 +36,20 @@ public class Server {
         javalin.put("/game",this::joinGame);
         javalin.delete("/db",this::clear);
 
-        userDao = new MemoryUserDao();
-        gameDao = new MemoryGameDao();
-        authDao = new MemoryAuthDao();
+        if (memory) {
+            userDao = new MemoryUserDao();
+            gameDao = new MemoryGameDao();
+            authDao = new MemoryAuthDao();
+        } else {
+            try {
+                userDao = new SQLUserDao();
+                gameDao = new SQLGameDao();
+                authDao = new SQLAuthDao();
+            } catch (DataAccessException e) {
+                System.out.println("Unable to create daos");
+            }
+        }
+
         userService = new UserService(userDao, authDao);
         gameService = new GameService(gameDao, authDao);
         clearService = new ClearService(userDao,gameDao,authDao);

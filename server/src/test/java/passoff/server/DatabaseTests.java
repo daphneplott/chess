@@ -31,7 +31,6 @@ public class DatabaseTests {
         System.out.println("Started test HTTP server on " + port);
 
         serverFacade = new TestServerFacade("localhost", Integer.toString(port));
-        System.out.println("Made it to 2");
     }
 
     @BeforeEach
@@ -49,8 +48,9 @@ public class DatabaseTests {
     @DisplayName("Persistence Test")
     @Order(1)
     public void persistenceTest() {
-        System.out.println("Made it to 3");
         int initialRowCount = getDatabaseRows();
+
+//        System.out.println("200");
 
         TestAuthResult regResult = serverFacade.register(TEST_USER);
         String auth = regResult.getAuthToken();
@@ -149,9 +149,11 @@ public class DatabaseTests {
         executeForAllTables((tableName, connection) -> {
             try (var statement = connection.createStatement()) {
                 var sql = "SELECT count(*) FROM " + tableName;
+//                var sql = "SELECT * FROM " + tableName;
                 try (var resultSet = statement.executeQuery(sql)) {
                     if (resultSet.next()) {
                         rows.addAndGet(resultSet.getInt(1));
+//                        System.out.println(resultSet.getString(1));
                     }
                 }
             }

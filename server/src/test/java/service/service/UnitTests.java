@@ -27,11 +27,15 @@ public class UnitTests {
 
 
     @BeforeAll
-    public static void init() {
+    public static void init() throws DataAccessException {
 
-        gameDao = new MemoryGameDao();
-        userDao = new MemoryUserDao();
-        authDao = new MemoryAuthDao();
+//        gameDao = new MemoryGameDao();
+//        userDao = new MemoryUserDao();
+//        authDao = new MemoryAuthDao();
+
+        gameDao = new SQLGameDao();
+        userDao = new SQLUserDao();
+        authDao = new SQLAuthDao();
 
         userService = new UserService(userDao, authDao);
         gameService = new GameService(gameDao, authDao);
@@ -105,7 +109,7 @@ public class UnitTests {
     }
 
     @Test
-    public void loginSucess() {
+    public void loginSuccess() {
         userService.logout(new Requests.LogoutRequest(existingAuth));
         Results.LoginResult loginResult = userService.login(new Requests.LoginRequest("existing user","1234"));
         Assertions.assertEquals(loginResult.code(),200);

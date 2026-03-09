@@ -24,7 +24,7 @@ public class ClearService {
             authDao.deleteAllAuth();
             return new Results.ClearResult(200,"");
         } catch (DataAccessException e) {
-            return new Results.ClearResult(500,e.getMessage());
+            return new Results.ClearResult(500,"Error:" + e.getMessage());
         }
 
     };
