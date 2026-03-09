@@ -2,6 +2,7 @@ package dataaccess;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import model.GameData;
 
 import java.sql.*;
@@ -12,6 +13,8 @@ import static java.sql.Types.NULL;
 
 public class SQLGameDao implements GameDaoInterface {
 
+    Gson gson = new GsonBuilder().serializeNulls().enableComplexMapKeySerialization().create();
+
     public SQLGameDao() throws DataAccessException {
         configureDatabase();
     }
@@ -20,7 +23,7 @@ public class SQLGameDao implements GameDaoInterface {
     public int createGame(GameData game) throws DataAccessException, BadDataRequestException {
         // Insert statement, return id
         var statement = "INSERT INTO games (whiteUsername, blackUsername, gameName, json) VALUES (?, ?, ?, ?)";
-        String json = new Gson().toJson(game.game());
+        String json = gson.toJson(game);
         int id = executeUpdate(statement, game.whiteUsername(),game.blackUsername(),game.gameName(),json);
         return id;
     };
@@ -54,11 +57,13 @@ public class SQLGameDao implements GameDaoInterface {
         }
         String statement;
         if (playerColor == ChessGame.TeamColor.WHITE) {
-            statement = "UPDATE games SET whiteUsername = ? WHERE gameID = ?";
+            statement = "UPDATE games SET whiteUsername = ?, json = ? WHERE gameID = ?";
         } else { // playerColor == ChessGame.TeamColor.BLACK
-            statement = "UPDATE games SET blackUsername = ? WHERE gameID = ?";
+            statement = "UPDATE games SET blackUsername = ?, json = ? WHERE gameID = ?";
         }
-        executeUpdate(statement,username,gameID);
+        GameData updatedGame = game.updatePlayerColor(playerColor,username);
+        String json = gson.toJson(updatedGame);
+        executeUpdate(statement,username, json,gameID);
     };
 
     private boolean colorTaken(GameData game, ChessGame.TeamColor playerColor) {
@@ -102,7 +107,7 @@ public class SQLGameDao implements GameDaoInterface {
     private GameData readGame(ResultSet rs) throws SQLException {
         var id = rs.getInt("gameID");
         var json = rs.getString("json");
-        GameData game = new Gson().fromJson(json, GameData.class);
+        GameData game = gson.fromJson(json, GameData.class);
         return game.setId(id);
     }
 
@@ -116,7 +121,6 @@ public class SQLGameDao implements GameDaoInterface {
                     else if (param == null) ps.setNull(i + 1, NULL);
                 }
                 ps.executeUpdate();
-
                 ResultSet rs = ps.getGeneratedKeys();
                 if (rs.next()) {
                     return rs.getInt(1);

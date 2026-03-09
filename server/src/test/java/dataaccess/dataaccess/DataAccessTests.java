@@ -29,11 +29,8 @@ public class DataAccessTests {
     @BeforeAll
     public static void setUp() {
         try {
-            System.out.println(1);
             authDao = new SQLAuthDao();
-            System.out.println(2);
             gameDao = new SQLGameDao();
-            System.out.println(3);
             userDao = new SQLUserDao();
         } catch (Exception e) {
             System.out.println("Could not configure");
@@ -248,8 +245,6 @@ public class DataAccessTests {
     public void createGameSuccess() throws DataAccessException {
         int id = gameDao.createGame(game);
         Assertions.assertFalse(gameDao.listGames().isEmpty());
-        System.out.println("ID");
-        System.out.println(id);
         Assertions.assertEquals(1,id);
     }
 
@@ -323,7 +318,7 @@ public class DataAccessTests {
             Assertions.assertTrue(true);
         }
         ArrayList<GameData> expectedGames = new ArrayList<>();
-        expectedGames.add(new GameData(1,"new user",null,"Test Game",new ChessGame()));
+        expectedGames.add(new GameData(1,"new user",null,"Test Game2",new ChessGame()));
         Assertions.assertEquals(gameDao.listGames(), expectedGames);
     }
 };
