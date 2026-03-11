@@ -997,5 +997,77 @@ You've encountered a bug. Now what?
 - Read the code
 - **The Debugger**
 
+# Console UI
+
+REPL
+- Read, Evaluate, Print loop
+- Need three for chess game: before login, after login, game play
+
+Keyboard input: 
+- Scanner scanner = new Scanner(System.in)
+- scanner.nextLine()
+
+Client functionality
+- rescuePet(String... params) passes in an array of variable length
+- creates a ServerFacade
+- May have sub functions throw exceptions
+- Have REPL catch and interpret exceptions
+
+## Designing output
+
+System.out.print() properties
+- background, color, italics
+
+Can also be thought of as a 2D grid of pixels, and you can move a cursor and input information into it.
+
+Terminal Control Codes
+- String you can pass that won't get printed, but do things
+- Also called Escape Sequences
+
+Example
+- var out = new PrintStream(System.out, ture, StandardCharsets.UTF_8)
+- out.print(sequence)
+- out.print(value)
+- out.print(reset sequence)
+- When you print a newline, it will use the current setting to fill in the rest of the line
+
+Chess
+- Can use alphanumeric + colors, all have the same width
+- Unicode characters - \u2654 to \265f, have different width
+- Can use unicode space widths like \u2003 or \u2001 instead of regular spaces
+
+## HTTP requests
+Create a client side class that will let it call the server. Called ServerFacade (face of the server).
+```java
+class ServerFacade {
+  String hostname;
+  int port;
+  ServerFacade(String hn, int p) {
+    hostname = hn;
+    port = p;
+  }
+  registerResult register(RegisterRequest reqest);
+}
+```
+
+Might include something like a build request function. May or may not expect Result/Request objects.
+
+Will expect json objects back from the server (result objects)
+
+Client side web API requests:
+- Instantiate class HttpClient httpClient = HttpClient.newHttpClient();
+- Create url string
+- create HttpRequest request = HttpRequest.newBuilder()
+- .uri(new URI(urlString))
+- .timeout(java.time.Duration.ofMillis(TIMEOUT_MILLIS))
+- .header("header name", "header value")
+- .GET()
+- .build()
+- HttpResponse<String> httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+- httpResponse.statusCode(), .headers(), .body()
+- For post methods: .POST(HttpRequest.BodyPublishers.ofString(message, StandardCharsets.UTF_8))
+
+
+
 
 
