@@ -1,10 +1,14 @@
 package ui;
 
+import chess.ChessGame;
+import chess.ChessPiece;
+import chess.ChessPosition;
 import model.AuthData;
 import model.GameData;
+import ui.EscapeSequences;
 
-import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.*;
+
 
 public class ChessClient {
 
@@ -24,7 +28,7 @@ public class ChessClient {
 
     public void run() {
         System.out.println("Welcome to Chess");
-        System.out.println(help());
+        System.out.println(help("login"));
 
         // REPL loop of REPL loops
         // Starting prompt - enter preLogin
@@ -94,7 +98,7 @@ public class ChessClient {
                 case "quit" -> {
                     return "quit";
                 }
-                default -> System.out.println(help());
+                default -> System.out.println(help("login"));
             }
         }
     }
@@ -184,7 +188,7 @@ public class ChessClient {
                 case "quit" -> {
                     return "quit";
                 }
-                default -> System.out.println(help());
+                default -> System.out.println(help("authenticated"));
             }
         }
     }
@@ -207,20 +211,121 @@ public class ChessClient {
                 case "quit" -> {
                     return "quit game";
                 }
-                default -> System.out.println(help());
+                default -> System.out.println(help("in game"));
             }
         }
     }
 
-    private String help() {
-
+    private String help(String where) {
+        if (Objects.equals(where, "login")) {
+            return "register <Username> <Password> <Email> - to create an account\n" +
+                    "login <Username> <Password> - to play chess\n" +
+                    "quit - exit application\n" +
+                    "help - view possible commands";
+        } else if (Objects.equals(where, "authenticated")) {
+            return "create <Name> - create a new game\n" +
+                    "list - list games\n" +
+                    "join <Id> [White|Black] - join a game\n" +
+                    "observe <Id> - view a game\n" +
+                    "logout - log out user\n" +
+                    "quit - exit application\n" +
+                    "help - view possible commands";
+        } else if (Objects.equals(where, "in game")) {
+            return "quit - exit current game\nhelp - view possible commands";
+        } else {
+            return "position not recognized";
+        }
     }
 
     private String outputGames() {
-
+        String output = "";
+        for (GameData game : games) {
+            String white = ((game.whiteUsername() != null) ? game.whiteUsername() : "[none]");
+            String black = ((game.blackUsername() != null) ? game.blackUsername() : "[none]");
+            output += String.format("%d. %s - White Player: %s, Black Player: %s %n",game.gameID(),game.gameName(), white,black);
+        }
+        return output;
     }
 
     private String drawBoard(String color) {
+        // To change from white to black, reverse each line, then reverse the order of each line
+        String[][] board = new String[10][10];
+        String background = EscapeSequences.SET_BG_COLOR_LIGHT_GREY + EscapeSequences.SET_TEXT_COLOR_DARK_GREY;
+        String white = EscapeSequences.SET_BG_COLOR_WHITE + EscapeSequences.SET_TEXT_COLOR_MAGENTA;
+        String black = EscapeSequences.SET_BG_COLOR_BLACK + EscapeSequences.SET_TEXT_COLOR_BLUE;
+        String letter;
+        HashMap<ChessPiece, String> pieceMapper = new HashMap<>();
+        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KING),EscapeSequences.WHITE_KING);
+        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.QUEEN),EscapeSequences.WHITE_QUEEN);
+        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.BISHOP),EscapeSequences.WHITE_BISHOP);
+        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT), EscapeSequences.WHITE_KNIGHT);
+        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK), EscapeSequences.WHITE_ROOK);
+        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN),EscapeSequences.WHITE_PAWN);
+        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING),EscapeSequences.BLACK_KING);
+        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.QUEEN),EscapeSequences.BLACK_QUEEN);
+        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.BISHOP),EscapeSequences.BLACK_BISHOP);
+        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT), EscapeSequences.BLACK_KNIGHT);
+        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN),EscapeSequences.BLACK_PAWN);
+        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK),EscapeSequences.BLACK_ROOK);
 
+        for (int i = 0; i < 10; i++) {
+            switch(i) {
+                case(0) -> letter = background + EscapeSequences.EMPTY;
+                case(1) -> letter = "\u2003a ";
+                case(2) -> letter = "\u2003b ";
+                case(3) -> letter = "\u2003c ";
+                case(4) -> letter = "\u2003d ";
+                case(5) -> letter = "\u2003e ";
+                case(6) -> letter = "\u2003f ";
+                case(7) -> letter = "\u2003g ";
+                case(8) -> letter = "\u2003h ";
+                default -> letter = background + EscapeSequences.EMPTY;
+            }
+            board[0][i] = letter;
+            board[9][i] = letter;
+            if (i < 9 && i > 0) {
+                board[i][0] = background + String.format("\u2003%d ",i);
+                board[i][9] = background + String.format("\u2003%d ",i);
+            }
+        }
+
+        var chessBoard = gameData.game().getBoard();
+
+        for (int i = 1; i < 9; i++) {
+            for (int j = 1; j < 9; j++) {
+                ChessPiece piece = chessBoard.getPiece(new ChessPosition(i,j));
+                if ((i+j)%2 == 0) {
+                    if (piece == null) {
+                        board[i][j] = black + EscapeSequences.EMPTY;
+                    } else {
+                        board[i][j] = black + pieceMapper.get(piece);
+                    }
+                } else {
+                    if (piece == null) {
+                        board[i][j] = white + EscapeSequences.EMPTY;
+                    } else {
+                        board[i][j] = white + pieceMapper.get(piece);
+                    }
+                }
+
+            }
+        }
+
+        String output = "";
+
+        if (color == "white") {
+            for (int i = 0; i < 10; i++) {
+                for (int j = 0; j < 10; j++) {
+                    output += board[9-i][j];
+                }
+            }
+        } else {
+            for (int i = 0; i < 10; i++) {
+                for (int j = 0; j < 10; j++) {
+                    output += board[i][9-j];
+                }
+            }
+        }
+        return output;
     }
 }
