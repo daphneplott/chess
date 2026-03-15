@@ -125,7 +125,7 @@ public class ChessClient {
             cmd = ((tokens.length > 0) ? tokens[0] : "help");
             switch (cmd) {
                 case "logout" -> {
-                    ServerFacade.logoutJoinObserveResponse response = server.logout(auth);
+                    ServerFacade.logoutJoinResponse response = server.logout(auth);
                     if (response.responseCode() == 200) {
                         auth = null;
                         authenticated = false;
@@ -153,15 +153,17 @@ public class ChessClient {
                 }
                 case "play" -> {
                     if (tokens.length == 3) {
-                        ServerFacade.logoutJoinObserveResponse response = server.join(tokens, auth);
+                        int gameId = -1;
+                        try {
+                            gameId = Integer.parseInt(tokens[1]);
+                        } catch (NumberFormatException e) {
+                            System.out.println("Expected: join <ID> [White|Black]");
+                        }
+                        ServerFacade.logoutJoinResponse response = server.join(tokens, auth);
                         if (response.responseCode() == 200) {
-                            try {
-                                joinedID = Integer.parseInt(tokens[1]);
-                                joinedColor = tokens[2];
-                                return "gameplay";
-                            } catch (NumberFormatException e) {
-                                System.out.println("Expected: join <ID> [White|Black]");
-                            }
+                            joinedID = gameId;
+                            joinedColor = tokens[2];
+                            return "gameplay";
                         } else if (response.responseCode() == 401) {
                             System.out.println("Unauthorized");
                         } else if (response.responseCode() == 403) {
@@ -229,7 +231,7 @@ public class ChessClient {
         } else if (Objects.equals(where, "authenticated")) {
             return "create <Name> - create a new game\n" +
                     "list - list games\n" +
-                    "join <Id> [White|Black] - join a game\n" +
+                    "play <Id> [White|Black] - join a game\n" +
                     "observe <Id> - view a game\n" +
                     "logout - log out user\n" +
                     "quit - exit application\n" +
