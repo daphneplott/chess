@@ -5,7 +5,6 @@ import chess.ChessPiece;
 import chess.ChessPosition;
 import model.AuthData;
 import model.GameData;
-import ui.EscapeSequences;
 
 import java.util.*;
 
@@ -110,6 +109,15 @@ public class ChessClient {
         String input;
         String[] tokens;
         String cmd;
+
+        ServerFacade.listGamesResponse listGamesResponse = server.list(auth);
+        if (listGamesResponse.responseCode() == 200) {
+            games = listGamesResponse.list();
+        } else if (listGamesResponse.responseCode() == 401) {
+            System.out.println("Could not access list of games, error: unauthorized");
+        } else if (listGamesResponse.responseCode() == 500) {
+            System.out.println("Something went wrong on our side. Please try again.");
+        }
         while (true) {
             System.out.print("[logged in] >>> ");
             input = scanner.nextLine();
@@ -141,23 +149,19 @@ public class ChessClient {
                     }
                 }
                 case "list" -> {
-                    ServerFacade.listGamesResponse response = server.list(auth);
-                    if (response.responseCode() == 200) {
-                        games = response.list();
-                        System.out.println(outputGames());
-                    } else if (response.responseCode() == 401) {
-                        System.out.println("Unauthorized");
-                    } else if (response.responseCode() == 500) {
-                        System.out.println("Something went wrong on our side. Please try again.");
-                    }
+                    System.out.println(outputGames());
                 }
                 case "play" -> {
                     if (tokens.length == 3) {
                         ServerFacade.logoutJoinObserveResponse response = server.join(tokens, auth);
                         if (response.responseCode() == 200) {
-                            joinedID = Integer.parseInt(tokens[1]);
-                            joinedColor = tokens[2];
-                            return "gameplay";
+                            try {
+                                joinedID = Integer.parseInt(tokens[1]);
+                                joinedColor = tokens[2];
+                                return "gameplay";
+                            } catch (NumberFormatException e) {
+                                System.out.println("Expected: join <ID> [White|Black]");
+                            }
                         } else if (response.responseCode() == 401) {
                             System.out.println("Unauthorized");
                         } else if (response.responseCode() == 403) {
@@ -171,15 +175,15 @@ public class ChessClient {
                 }
                 case "observe" -> {
                     if (tokens.length == 2) {
-                        ServerFacade.logoutJoinObserveResponse response = server.observe(tokens, auth);
-                        if (response.responseCode() == 200) {
-                            joinedID = Integer.parseInt(tokens[1]);
-                            joinedColor = "white";
-                            return "gameplay";
-                        } else if (response.responseCode() == 401) {
-                            System.out.println("Unauthorized");
-                        } else if (response.responseCode() == 500) {
-                            System.out.println("Something went wrong on our side. Please try again.");
+                        try {
+                            int gameID = Integer.parseInt(tokens[1]);
+                            if (gameID <= games.toArray().length) {
+                                joinedID = gameID;
+                                joinedColor = "white";
+                                return "gameplay";
+                            }
+                        } catch (NumberFormatException e) {
+                            System.out.println("Expected: observe <ID>");
                         }
                     } else {
                         System.out.println("Expected: observe <ID>");
@@ -270,7 +274,6 @@ public class ChessClient {
 
         for (int i = 0; i < 10; i++) {
             switch(i) {
-                case(0) -> letter = background + EscapeSequences.EMPTY;
                 case(1) -> letter = "\u2003a ";
                 case(2) -> letter = "\u2003b ";
                 case(3) -> letter = "\u2003c ";
@@ -313,7 +316,7 @@ public class ChessClient {
 
         String output = "";
 
-        if (color == "white") {
+        if (Objects.equals(color, "white")) {
             for (int i = 0; i < 10; i++) {
                 for (int j = 0; j < 10; j++) {
                     output += board[9-i][j];
