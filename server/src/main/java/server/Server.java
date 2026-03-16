@@ -1,5 +1,7 @@
 package server;
 
+import chess.ChessGame;
+import com.google.gson.GsonBuilder;
 import dataaccess.*;
 import io.javalin.*;
 import com.google.gson.Gson;
@@ -25,7 +27,7 @@ public class Server {
 //    }
 
     public Server() {
-        Boolean memory = false;
+        boolean memory = true;
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
         javalin.post("/user",this::register);
@@ -54,7 +56,7 @@ public class Server {
         gameService = new GameService(gameDao, authDao);
         clearService = new ClearService(userDao,gameDao,authDao);
 
-        gson = new Gson();
+        gson = new GsonBuilder().enableComplexMapKeySerialization().create();
     }
 
     public int run(int desiredPort) {

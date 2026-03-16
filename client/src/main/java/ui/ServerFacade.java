@@ -1,6 +1,7 @@
 package ui;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import model.AuthData;
 import model.GameData;
 
@@ -30,7 +31,7 @@ public class ServerFacade {
     private final HttpClient client;
     private final String serverUrl;
     private final AuthData fakeAuth = new AuthData("","");
-    private final Gson gson = new Gson();
+    private final Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
 
     public ServerFacade(String serverUrl) {
         client = HttpClient.newHttpClient();
@@ -42,7 +43,11 @@ public class ServerFacade {
         // (cmd), username, password
         // Post /session
 
-        String body = String.format("{\"username\": %s, \"password\": %s", params[1],params[2]);
+        for (int i = 0; i < params.length; i++) {
+            params[i] = params[i].replace(" ","_");
+        }
+
+        String body = String.format("{\"username\": %s, \"password\": %s}", params[1],params[2]);
 
         var request = HttpRequest.newBuilder()
                 .uri(URI.create(serverUrl + "/session"))
@@ -70,7 +75,11 @@ public class ServerFacade {
         // username, password, email
         // post /user
 
-        String body = String.format("{\"username\": %s, \"password\": %s, \"email\": %s", params[1],params[2],params[3]);
+        for (int i = 0; i < params.length; i++) {
+            params[i] = params[i].replace(" ","_");
+        }
+
+        String body = String.format("{\"username\": %s, \"password\": %s, \"email\": %s}", params[1],params[2],params[3]);
 
         var request = HttpRequest.newBuilder()
                 .uri(URI.create(serverUrl + "/user"))
@@ -114,7 +123,11 @@ public class ServerFacade {
         // auth, gamename
         // Post /game
 
-        String body = String.format("{\"gameName\": %s", params[1]);
+        for (int i = 0; i < params.length; i++) {
+            params[i] = params[i].replace(" ","_");
+        }
+
+        String body = String.format("{\"gameName\": %s}", params[1]);
 
         var request = HttpRequest.newBuilder()
                 .uri(URI.create(serverUrl + "/game"))
@@ -170,7 +183,11 @@ public class ServerFacade {
         // color, id, auth
         // put /game
 
-        String body = String.format("{\"playerColor\": %s \"gameID\": %d", params[2], Integer.parseInt(params[1]));
+        for (int i = 0; i < params.length; i++) {
+            params[i] = params[i].replace(" ","_");
+        }
+
+        String body = String.format("{\"playerColor\": %s, \"gameID\": %s}", params[2].toUpperCase(), params[1]);
 
         var request = HttpRequest.newBuilder()
                 .uri(URI.create(serverUrl + "/game"))

@@ -115,8 +115,8 @@ public class ServerFacadeTests {
         var response = facade.list(auth);
         Assertions.assertEquals(200,response.responseCode());
         ArrayList<GameData> expected = new ArrayList<>();
-        expected.add(new GameData(1,null,null,"cool name",new ChessGame()));
-        expected.add(new GameData(2,null,null,"cool name 2",new ChessGame()));
+        expected.add(new GameData(1,null,null,"cool_name",new ChessGame()));
+        expected.add(new GameData(2,null,null,"cool_name_2",new ChessGame()));
         Assertions.assertEquals(expected,response.list());
     }
 
@@ -129,18 +129,18 @@ public class ServerFacadeTests {
 
     @Test
     public void joinSuccess() {
-        facade.create(new String[]{"create","cool name"}, new AuthData("1234","user"));
-        var response = facade.join(new String[]{"join","white","1"},auth);
+        var response2 = facade.create(new String[]{"create","cool name"}, auth);
+        var response = facade.join(new String[]{"join","1","white"},auth);
         Assertions.assertEquals(200,response.responseCode());
     }
 
     @Test
     public void joinFailure() {
-        facade.create(new String[]{"create","cool name"}, new AuthData("1234","user"));
-        facade.join(new String[]{"join","white","1"},auth);
+        var response2 = facade.create(new String[]{"create","cool name"}, auth);
+        facade.join(new String[]{"join","1","white"},auth);
         var response1 = facade.register(new String[]{"register","new user","5678","newuser@mail.com"});
         AuthData newAuth = response1.auth();
-        var response = facade.join(new String[]{"join","white","1"},newAuth);
+        var response = facade.join(new String[]{"join","1","white"},newAuth);
         Assertions.assertEquals(403,response.responseCode());
     }
 }

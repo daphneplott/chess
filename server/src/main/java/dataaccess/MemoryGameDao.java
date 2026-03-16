@@ -33,7 +33,7 @@ public class MemoryGameDao implements GameDaoInterface {
 
     @Override
     public void updateGame(ChessGame.TeamColor playerColor, String username, int gameID)
-        throws DataAccessException {
+            throws DataAccessException {
         for (GameData game : games) {
             if (game.gameID() == gameID) {
                 if (colorTaken(game,playerColor)) {
