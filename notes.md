@@ -1067,7 +1067,43 @@ Client side web API requests:
 - httpResponse.statusCode(), .headers(), .body()
 - For post methods: .POST(HttpRequest.BodyPublishers.ofString(message, StandardCharsets.UTF_8))
 
+# Security
 
+Potential threats
+- Gain access to dail
+- Gain access to computer to launch attacks
+- Disable systems
 
+Security Goals
+- Data confidentiality
+- Authentication
+- Data integrity
+- Non repudiation
 
+## Cryptographic Hashing
 
+One-way: given the output, you cannot recover the input
+
+Deterministic: given the same input, you get the same output
+
+Fixed-size: output is always the same size
+
+Pseudo-random: output seems statistically random, although it is not
+
+Generally unique: basically every different input becomes a different output
+
+Older hash functions like MD-5 and SHA-1 have been cracked. Currently uses things like SHA-2, which is a family of algorithms. You get to choose your output size.
+
+Used to store passwords in database. You need to check it's the same, but don't need the specific value. The server doesn't need to know the password. Can check that data hasn't been changed at all. Digital signatures. Unique ids.
+
+Don't implement them yourself - just use the provided code from the experts. 
+
+To mitigate password attacks, you can 'salt' passwords to change it in a particular way so that hackers can't figure out what the original password was. Append on a random string. Store the salt value you use for each user.
+
+Want to use a slow hashing algorithm, or something that costs a lot of memory. This makes it harder for someone to hack passwords because hackers have to check a ton of passwords, and that combines into a ton of time. An example of this is bcrypt. Bcrypt will also salt it for you.
+
+## Encryption
+
+Used for data-in-motion. Need to know what it said in the first place, but don't want anyone to be able to overhear. Need to be two-way. Uses a key. Want a larger key to help your data be more secure.
+
+Symmetric or secret key: Same key is used for both encryption and decryption. Use a secure key exchange algorithm to exchange the symmetric key. 
