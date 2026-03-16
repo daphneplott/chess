@@ -79,7 +79,7 @@ public class ChessClient {
                     }
                 }
                 case "register" -> {
-                    if (tokens.length == 3) {
+                    if (tokens.length == 4) {
                         ServerFacade.loginRegisterResponse response = server.register(tokens);
                         if (response.responseCode() == 200) {
                             auth = response.auth();
@@ -245,6 +245,9 @@ public class ChessClient {
 
     private String outputGames() {
         String output = "";
+        if (games.toArray().length == 0) {
+            return "No current games";
+        }
         for (GameData game : games) {
             String white = ((game.whiteUsername() != null) ? game.whiteUsername() : "[none]");
             String black = ((game.blackUsername() != null) ? game.blackUsername() : "[none]");
