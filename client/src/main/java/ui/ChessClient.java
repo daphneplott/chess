@@ -61,45 +61,53 @@ public class ChessClient {
             input = scanner.nextLine();
             tokens = input.toLowerCase().split(" ");
             cmd = ((tokens.length > 0) ? tokens[0] : "help");
-            switch (cmd) {
-                case "login" -> {
-                    if (tokens.length == 3) {
-                        ServerFacade.loginRegisterResponse response = server.login(tokens);
-                        if (response.responseCode() == 200) {
-                            auth = response.auth();
-                            authenticated = true;
-                            return "logged in";
-                        } else if (response.responseCode() == 401) {
-                            System.out.println("Password incorrect");
-                        } else if (response.responseCode() == 500) {
-                            System.out.println("Something went wrong on our side. Please try again.");
-                        }
-                    } else {
-                        System.out.println("Expected: login <Username> <Password>");
-                    }
-                }
-                case "register" -> {
-                    if (tokens.length == 4) {
-                        ServerFacade.loginRegisterResponse response = server.register(tokens);
-                        if (response.responseCode() == 200) {
-                            auth = response.auth();
-                            authenticated = true;
-                            return "logged in";
-                        } else if (response.responseCode() == 403) {
-                            System.out.println("Username already taken. Please try with a new username.");
-                        } else if (response.responseCode() == 500) {
-                            System.out.println("Something went wrong on our side. Please try again.");
-                        }
-                    } else {
-                        System.out.println("Expected: register <Username> <Password> <Email>");
-                    }
-                }
-                case "quit" -> {
-                    return "quit";
-                }
-                default -> System.out.println(help("login"));
+            String next = evalPreLogin(cmd,tokens);
+            if (!next.equals("none")) {
+                return next;
             }
         }
+    }
+
+    private String evalPreLogin(String cmd, String[] tokens) {
+        switch (cmd) {
+            case "login" -> {
+                if (tokens.length == 3) {
+                    ServerFacade.LoginRegisterResponse response = server.login(tokens);
+                    if (response.responseCode() == 200) {
+                        auth = response.auth();
+                        authenticated = true;
+                        return "logged in";
+                    } else if (response.responseCode() == 401) {
+                        System.out.println("Password incorrect");
+                    } else if (response.responseCode() == 500) {
+                        System.out.println("Something went wrong on our side. Please try again.");
+                    }
+                } else {
+                    System.out.println("Expected: login <Username> <Password>");
+                }
+            }
+            case "register" -> {
+                if (tokens.length == 4) {
+                    ServerFacade.LoginRegisterResponse response = server.register(tokens);
+                    if (response.responseCode() == 200) {
+                        auth = response.auth();
+                        authenticated = true;
+                        return "logged in";
+                    } else if (response.responseCode() == 403) {
+                        System.out.println("Username already taken. Please try with a new username.");
+                    } else if (response.responseCode() == 500) {
+                        System.out.println("Something went wrong on our side. Please try again.");
+                    }
+                } else {
+                    System.out.println("Expected: register <Username> <Password> <Email>");
+                }
+            }
+            case "quit" -> {
+                return "quit";
+            }
+            default -> System.out.println(help("login"));
+        }
+        return "none";
     }
 
     private String postLogin() {
@@ -110,7 +118,7 @@ public class ChessClient {
         String[] tokens;
         String cmd;
 
-        ServerFacade.listGamesResponse listGamesResponse = server.list(auth);
+        ServerFacade.ListGamesResponse listGamesResponse = server.list(auth);
         if (listGamesResponse.responseCode() == 200) {
             games = listGamesResponse.list();
         } else if (listGamesResponse.responseCode() == 401) {
@@ -123,31 +131,107 @@ public class ChessClient {
             input = scanner.nextLine();
             tokens = input.toLowerCase().split(" ");
             cmd = ((tokens.length > 0) ? tokens[0] : "help");
-            switch (cmd) {
-                case "logout" -> {
-                    ServerFacade.logoutJoinResponse response = server.logout(auth);
-                    if (response.responseCode() == 200) {
-                        auth = null;
-                        authenticated = false;
-                        return "logged out";
-                    } else if (response.responseCode() == 401) {
+            String next = evalPostLogin(cmd, tokens);
+            if (!next.equals("none")) {
+                return next;
+            }
+        }
+    }
+
+    private String evalPostLogin(String cmd, String[] tokens) {
+        switch (cmd) {
+            case "logout" -> {
+                ServerFacade.LogoutJoinResponse response = server.logout(auth);
+                if (response.responseCode() == 200) {
+                    auth = null;
+                    authenticated = false;
+                    return "logged out";
+                } else if (response.responseCode() == 401) {
+                    System.out.println("Unauthorized");
+                } else if (response.responseCode() == 500) {
+                    System.out.println("Something went wrong on our side. Please try again.");
+                }
+            }
+            case "create" -> {
+                if (tokens.length == 2) {
+                    ServerFacade.CreateGameResponse response = server.create(tokens, auth);
+                    if (response.responseCode() == 401) {
                         System.out.println("Unauthorized");
                     } else if (response.responseCode() == 500) {
                         System.out.println("Something went wrong on our side. Please try again.");
                     }
+                } else {
+                    System.out.println("Expected: create <Game Name>");
                 }
-                case "create" -> {
-                    if (tokens.length == 2) {
-                        ServerFacade.createGameResponse response = server.create(tokens, auth);
-                        if (response.responseCode() == 401) {
-                            System.out.println("Unauthorized");
-                        } else if (response.responseCode() == 500) {
-                            System.out.println("Something went wrong on our side. Please try again.");
+                ServerFacade.ListGamesResponse listGamesResponse = server.list(auth);
+                if (listGamesResponse.responseCode() == 200) {
+                    games = listGamesResponse.list();
+                } else if (listGamesResponse.responseCode() == 401) {
+                    System.out.println("Could not access list of games, error: unauthorized");
+                } else if (listGamesResponse.responseCode() == 500) {
+                    System.out.println("Could not fetch updated list ...");
+                }
+            }
+            case "list" -> {
+                System.out.println(outputGames());
+            }
+            case "play" -> {
+                String next = evalPostLoginPlay(tokens);
+                if (!next.equals("none")) {
+                    return next;
+                }
+            }
+            case "observe" -> {
+                if (tokens.length == 2) {
+                    try {
+                        int gameID = Integer.parseInt(tokens[1]);
+                        if (gameID <= games.toArray().length) {
+                            joinedID = gameID;
+                            joinedColor = "white";
+                            return "gameplay";
+                        } else {
+                            System.out.println("ID not found");
                         }
-                    } else {
-                        System.out.println("Expected: create <Game Name>");
+                    } catch (NumberFormatException e) {
+                        System.out.println("Expected: observe <ID>");
                     }
-                    listGamesResponse = server.list(auth);
+                } else {
+                    System.out.println("Expected: observe <ID>");
+                }
+            }
+            case "quit" -> {
+                return "quit";
+            }
+            default -> System.out.println(help("authenticated"));
+        }
+        return "none";
+    }
+
+    private String evalPostLoginPlay(String[] tokens) {
+        if (tokens.length == 3 && (tokens[2].equals("white") || tokens[2].equals("black"))) {
+            int gameId = -1;
+            try {
+                gameId = Integer.parseInt(tokens[1]);
+                if ( (Objects.equals(games.get(gameId-1).blackUsername(), auth.username()) && tokens[2].equals("black")) ||
+                        (Objects.equals(games.get(gameId-1).whiteUsername(), auth.username()) && tokens[2].equals("white"))) {
+                    joinedID = gameId;
+                    joinedColor = tokens[2];
+                    return "gameplay";
+                }
+                else {
+                    ServerFacade.LogoutJoinResponse response = server.join(tokens, auth);
+                    if (response.responseCode() == 200) {
+                        joinedID = gameId;
+                        joinedColor = tokens[2];
+                        return "gameplay";
+                    } else if (response.responseCode() == 401) {
+                        System.out.println("Unauthorized");
+                    } else if (response.responseCode() == 403) {
+                        System.out.println("That color is already taken. Please choose a different color or game.");
+                    } else if (response.responseCode() == 500) {
+                        System.out.println("Something went wrong on our side. Please try again.");
+                    }
+                    ServerFacade.ListGamesResponse listGamesResponse = server.list(auth);
                     if (listGamesResponse.responseCode() == 200) {
                         games = listGamesResponse.list();
                     } else if (listGamesResponse.responseCode() == 401) {
@@ -156,73 +240,13 @@ public class ChessClient {
                         System.out.println("Could not fetch updated list ...");
                     }
                 }
-                case "list" -> {
-                    System.out.println(outputGames());
-                }
-                case "play" -> {
-                    if (tokens.length == 3 && (tokens[2].equals("white") || tokens[2].equals("black"))) {
-                        int gameId = -1;
-                        try {
-                            gameId = Integer.parseInt(tokens[1]);
-                            if ( (Objects.equals(games.get(gameId-1).blackUsername(), auth.username()) && tokens[2].equals("black")) ||
-                                    (Objects.equals(games.get(gameId-1).whiteUsername(), auth.username()) && tokens[2].equals("white"))) {
-                                joinedID = gameId;
-                                joinedColor = tokens[2];
-                                return "gameplay";
-                            }
-                            else {
-                                ServerFacade.logoutJoinResponse response = server.join(tokens, auth);
-                                if (response.responseCode() == 200) {
-                                    joinedID = gameId;
-                                    joinedColor = tokens[2];
-                                    return "gameplay";
-                                } else if (response.responseCode() == 401) {
-                                    System.out.println("Unauthorized");
-                                } else if (response.responseCode() == 403) {
-                                    System.out.println("That color is already taken. Please choose a different color or game.");
-                                } else if (response.responseCode() == 500) {
-                                    System.out.println("Something went wrong on our side. Please try again.");
-                                }
-                                listGamesResponse = server.list(auth);
-                                if (listGamesResponse.responseCode() == 200) {
-                                    games = listGamesResponse.list();
-                                } else if (listGamesResponse.responseCode() == 401) {
-                                    System.out.println("Could not access list of games, error: unauthorized");
-                                } else if (listGamesResponse.responseCode() == 500) {
-                                    System.out.println("Could not fetch updated list ...");
-                                }
-                            }
-                        } catch (NumberFormatException e) {
-                            System.out.println("Expected: join <ID> [White|Black]");
-                        }
-                    } else {
-                        System.out.println("Expected: join <ID> [White|Black]");
-                    }
-                }
-                case "observe" -> {
-                    if (tokens.length == 2) {
-                        try {
-                            int gameID = Integer.parseInt(tokens[1]);
-                            if (gameID <= games.toArray().length) {
-                                joinedID = gameID;
-                                joinedColor = "white";
-                                return "gameplay";
-                            } else {
-                                System.out.println("ID not found");
-                            }
-                        } catch (NumberFormatException e) {
-                            System.out.println("Expected: observe <ID>");
-                        }
-                    } else {
-                        System.out.println("Expected: observe <ID>");
-                    }
-                }
-                case "quit" -> {
-                    return "quit";
-                }
-                default -> System.out.println(help("authenticated"));
+            } catch (NumberFormatException e) {
+                System.out.println("Expected: join <ID> [White|Black]");
             }
+        } else {
+            System.out.println("Expected: join <ID> [White|Black]");
         }
+        return "none";
     }
 
     private String gamePlay() {
@@ -290,18 +314,30 @@ public class ChessClient {
         String black = EscapeSequences.SET_BG_COLOR_BLACK;
         String letter;
         HashMap<ChessPiece, String> pieceMapper = new HashMap<>();
-        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KING),EscapeSequences.SET_TEXT_COLOR_MAGENTA + EscapeSequences.WHITE_KING);
-        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.QUEEN),EscapeSequences.SET_TEXT_COLOR_MAGENTA + EscapeSequences.WHITE_QUEEN);
-        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.BISHOP),EscapeSequences.SET_TEXT_COLOR_MAGENTA + EscapeSequences.WHITE_BISHOP);
-        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT), EscapeSequences.SET_TEXT_COLOR_MAGENTA + EscapeSequences.WHITE_KNIGHT);
-        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK), EscapeSequences.SET_TEXT_COLOR_MAGENTA + EscapeSequences.WHITE_ROOK);
-        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN),EscapeSequences.SET_TEXT_COLOR_MAGENTA + EscapeSequences.WHITE_PAWN);
-        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING),EscapeSequences.SET_TEXT_COLOR_BLUE + EscapeSequences.BLACK_KING);
-        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.QUEEN),EscapeSequences.SET_TEXT_COLOR_BLUE + EscapeSequences.BLACK_QUEEN);
-        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.BISHOP),EscapeSequences.SET_TEXT_COLOR_BLUE + EscapeSequences.BLACK_BISHOP);
-        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT),EscapeSequences.SET_TEXT_COLOR_BLUE +  EscapeSequences.BLACK_KNIGHT);
-        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN),EscapeSequences.SET_TEXT_COLOR_BLUE+ EscapeSequences.BLACK_PAWN);
-        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK),EscapeSequences.SET_TEXT_COLOR_BLUE+ EscapeSequences.BLACK_ROOK);
+        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KING),
+                EscapeSequences.SET_TEXT_COLOR_MAGENTA + EscapeSequences.WHITE_KING);
+        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.QUEEN),
+                EscapeSequences.SET_TEXT_COLOR_MAGENTA + EscapeSequences.WHITE_QUEEN);
+        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.BISHOP),
+                EscapeSequences.SET_TEXT_COLOR_MAGENTA + EscapeSequences.WHITE_BISHOP);
+        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT),
+                EscapeSequences.SET_TEXT_COLOR_MAGENTA + EscapeSequences.WHITE_KNIGHT);
+        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK),
+                EscapeSequences.SET_TEXT_COLOR_MAGENTA + EscapeSequences.WHITE_ROOK);
+        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN),
+                EscapeSequences.SET_TEXT_COLOR_MAGENTA + EscapeSequences.WHITE_PAWN);
+        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING),
+                EscapeSequences.SET_TEXT_COLOR_BLUE + EscapeSequences.BLACK_KING);
+        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.QUEEN),
+                EscapeSequences.SET_TEXT_COLOR_BLUE + EscapeSequences.BLACK_QUEEN);
+        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.BISHOP),
+                EscapeSequences.SET_TEXT_COLOR_BLUE + EscapeSequences.BLACK_BISHOP);
+        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT),
+                EscapeSequences.SET_TEXT_COLOR_BLUE +  EscapeSequences.BLACK_KNIGHT);
+        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN),
+                EscapeSequences.SET_TEXT_COLOR_BLUE+ EscapeSequences.BLACK_PAWN);
+        pieceMapper.put(new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK),
+                EscapeSequences.SET_TEXT_COLOR_BLUE+ EscapeSequences.BLACK_ROOK);
 
         for (int i = 0; i < 10; i++) {
             switch(i) {

@@ -27,7 +27,7 @@ public class Server {
 //    }
 
     public Server() {
-        boolean memory = true;
+        boolean memory = false;
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
         javalin.post("/user",this::register);
