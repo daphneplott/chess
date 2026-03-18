@@ -16,7 +16,9 @@ public class ServerFacade {
 
     // Special record classes
 
-    public record LoginRegisterResponse(AuthData auth, int responseCode) {}
+    public record LoginRegisterResponse(AuthData auth, int responseCode, ErrorMessage message) {}
+
+    public record ErrorMessage(int code, String message) {}
 
     public record LogoutJoinResponse(int responseCode) {}
 
@@ -63,15 +65,15 @@ public class ServerFacade {
             if (status == 200) {
                 var responseBody = response.body();
                 if (responseBody != null) {
-                    return new LoginRegisterResponse(gson.fromJson(responseBody,AuthData.class),200);
+                    return new LoginRegisterResponse(gson.fromJson(responseBody,AuthData.class),200,new ErrorMessage(0,""));
                 }
             } else {
-                return new LoginRegisterResponse(fakeAuth,status);
+                return new LoginRegisterResponse(fakeAuth,status, gson.fromJson(response.body(), ErrorMessage.class));
             }
         } catch (Exception e) {
-            return new LoginRegisterResponse(fakeAuth,500);
+            return new LoginRegisterResponse(fakeAuth,500,new ErrorMessage(0,""));
         }
-        return new LoginRegisterResponse(fakeAuth,500);
+        return new LoginRegisterResponse(fakeAuth,500,new ErrorMessage(0,""));
     }
 
     public LoginRegisterResponse register(String[] params) {

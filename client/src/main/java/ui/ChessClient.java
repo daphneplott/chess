@@ -81,9 +81,7 @@ public class ChessClient {
                         authenticated = true;
                         return "logged in";
                     } else if (response.responseCode() == 401) {
-                        System.out.println("Password incorrect");
-                    } else if (response.responseCode() == 403) {
-                        System.out.println("That username does not exist.");
+                        System.out.println(clean(response.message().message()));
                     } else if (response.responseCode() == 500) {
                         System.out.println("Something went wrong on our side. Please try again.");
                     }
@@ -282,6 +280,16 @@ public class ChessClient {
                 }
                 default -> System.out.println(help("in game"));
             }
+        }
+    }
+
+    private String clean(String message) {
+        if (message.equals("Error: username not found")) {
+            return "User does not exist";
+        } else if (message.equals("Error: unauthorized")) {
+            return "Password incorrect";
+        } else {
+            return "Something went wrong on our side. Please try again.";
         }
     }
 

@@ -44,7 +44,7 @@ public class UserService {
         try {
             user = userDao.getUser(request.username());
         } catch (BadDataRequestException e) {
-            return new Results.LoginResult(403,null,null,"Error: username not found");
+            return new Results.LoginResult(401,null,null,"Error: username not found");
         } catch (DataAccessException e) {
             return new Results.LoginResult(500,null,null,String.format("Error: %s",e.getMessage()));
         }
