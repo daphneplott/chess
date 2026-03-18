@@ -1106,4 +1106,29 @@ Want to use a slow hashing algorithm, or something that costs a lot of memory. T
 
 Used for data-in-motion. Need to know what it said in the first place, but don't want anyone to be able to overhear. Need to be two-way. Uses a key. Want a larger key to help your data be more secure.
 
-Symmetric or secret key: Same key is used for both encryption and decryption. Use a secure key exchange algorithm to exchange the symmetric key. 
+Symmetric or secret key: Same key is used for both encryption and decryption. Use a secure key exchange algorithm to exchange the symmetric key. AES.
+
+Asymmetric or Public key: Have two keys, one for encryption, one for decryption. The encryption key is public, such that anybody could use it, used to send a message to someone else. The decryption key is private. Don't need to securely exchange the key, or meet in person to exchange the key. Examples include RSA, Eliptic Curve, RLWE, lattice based. Not used for bulk encryption, but for secure key exchange, then that key will exchange everything else. Digital signatures. One of the most important inventions in the history of computing!
+
+Advantages and Disadvantages
+- Asymmetric can only encrypt so much data at a time
+- Asymmetric is slower
+- Must be stored securely
+
+Applications:
+- Protecting data as it traverses the network
+- Storing data in a database
+- Password managers
+
+## Secure Key Exchange
+
+Need to come up with a key, pass it, and not have anyone else find out. Use a public-private key pair. Send a random AES key using public-private key encryption.
+
+## HTTPS
+
+Encrypted HTTP requests. Does a secure key exchange, exchanges a symmetric key. First the client sends a random number, then the server sends a random number. Then, server sends public key to client, client sends server another random number encrypted with that public key. Both Client and Server use all three random numbers to generate the same symmetric key, and use this to exchange all the rest of its communications.
+
+Has a handshake to exchange a certificate, which exchanges public keys and certifies who the server is. Uses a third party service to create certificate files.
+
+Digital signature: signer runs data through a hash. Signer encrypts that using their private key. Signer sends data. The browser will validate that signature by hashing the cert file as well. Then it decrypts the hash using the given public key, and compares the two hashes. This ensures that the public key given and the hash given belong to the person they say they belong to.
+
