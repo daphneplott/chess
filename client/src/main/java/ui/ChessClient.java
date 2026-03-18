@@ -183,17 +183,19 @@ public class ChessClient {
             }
             case "observe" -> {
                 if (tokens.length == 2) {
+                    int gameID = -1;
                     try {
-                        int gameID = Integer.parseInt(tokens[1]);
-                        if (gameID <= games.toArray().length) {
-                            joinedID = gameID;
-                            joinedColor = "white";
-                            return "gameplay";
-                        } else {
-                            System.out.println("ID not found");
-                        }
+                        gameID = Integer.parseInt(tokens[1]);
                     } catch (NumberFormatException e) {
                         System.out.println("Expected: observe <ID>");
+                        return "none";
+                    }
+                    if (gameID <= games.toArray().length) {
+                        joinedID = gameID;
+                        joinedColor = "white";
+                        return "gameplay";
+                    } else {
+                        System.out.println("ID not found");
                     }
                 } else {
                     System.out.println("Expected: observe <ID>");
