@@ -19,7 +19,7 @@ public class ChessClient {
     private String joinedColor;
     private GameData gameData;
     private ArrayList<GameData> games;
-    private HashMap<Integer, Integer> ids;
+    private HashMap<Integer, Integer> ids = new HashMap<>();
 
 
     public ChessClient(String serverUrl) {
@@ -82,7 +82,7 @@ public class ChessClient {
                         return "logged in";
                     } else if (response.responseCode() == 401) {
                         System.out.println("Password incorrect");
-                    } else if (response.responseCode() == 405) {
+                    } else if (response.responseCode() == 403) {
                         System.out.println("That username does not exist.");
                     } else if (response.responseCode() == 500) {
                         System.out.println("Something went wrong on our side. Please try again.");
@@ -220,7 +220,7 @@ public class ChessClient {
             try {
                 gameId = Integer.parseInt(tokens[1]);
                 if (! (gameId <= games.toArray().length && gameId > 0) ) {
-                    System.out.println("Expected: join <ID> [White|Black]");
+                    System.out.println("ID not found");
                     return "none";
                 }
                 if ( (Objects.equals(games.get(gameId-1).blackUsername(), auth.username()) && tokens[2].equals("black")) ||
