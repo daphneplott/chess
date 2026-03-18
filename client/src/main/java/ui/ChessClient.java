@@ -19,6 +19,7 @@ public class ChessClient {
     private String joinedColor;
     private GameData gameData;
     private ArrayList<GameData> games;
+    private HashMap<Integer, Integer> ids;
 
 
     public ChessClient(String serverUrl) {
@@ -39,8 +40,10 @@ public class ChessClient {
                 scanner.close();
                 return;
             } else if (next.equals("logged in")) {
+                System.out.println("Success! You've logged in.");
                 next = postLogin();
             } else if (next.equals("logged out")) {
+                System.out.println("Success! You've logged out.");
                 next = preLogin();
             } else if (next.equals("gameplay")) {
                 next = gamePlay();
@@ -79,6 +82,8 @@ public class ChessClient {
                         return "logged in";
                     } else if (response.responseCode() == 401) {
                         System.out.println("Password incorrect");
+                    } else if (response.responseCode() == 405) {
+                        System.out.println("That username does not exist.");
                     } else if (response.responseCode() == 500) {
                         System.out.println("Something went wrong on our side. Please try again.");
                     }
@@ -190,7 +195,7 @@ public class ChessClient {
                         System.out.println("Expected: observe <ID>");
                         return "none";
                     }
-                    if (gameID <= games.toArray().length) {
+                    if (gameID <= games.toArray().length && gameID > 0) {
                         joinedID = gameID;
                         joinedColor = "white";
                         return "gameplay";
@@ -214,6 +219,10 @@ public class ChessClient {
             int gameId = -1;
             try {
                 gameId = Integer.parseInt(tokens[1]);
+                if (! (gameId <= games.toArray().length && gameId > 0) ) {
+                    System.out.println("Expected: join <ID> [White|Black]");
+                    return "none";
+                }
                 if ( (Objects.equals(games.get(gameId-1).blackUsername(), auth.username()) && tokens[2].equals("black")) ||
                         (Objects.equals(games.get(gameId-1).whiteUsername(), auth.username()) && tokens[2].equals("white"))) {
                     joinedID = gameId;
@@ -221,7 +230,9 @@ public class ChessClient {
                     return "gameplay";
                 }
                 else {
-                    ServerFacade.LogoutJoinResponse response = server.join(tokens, auth);
+                    String[] newTokens = tokens.clone();
+                    newTokens[1] = String.valueOf(ids.get(gameId));
+                    ServerFacade.LogoutJoinResponse response = server.join(newTokens, auth);
                     if (response.responseCode() == 200) {
                         joinedID = gameId;
                         joinedColor = tokens[2];
@@ -300,10 +311,14 @@ public class ChessClient {
         if (games.toArray().length == 0) {
             return "No current games";
         }
+        ids.clear();
+        int i = 1;
         for (GameData game : games) {
             String white = ((game.whiteUsername() != null) ? game.whiteUsername() : "[none]");
             String black = ((game.blackUsername() != null) ? game.blackUsername() : "[none]");
-            output += String.format("%d. %s - White Player: %s, Black Player: %s %n",game.gameID(),game.gameName(), white,black);
+            output += String.format("%d. %s - White Player: %s, Black Player: %s %n",i,game.gameName(), white,black);
+            ids.put(i,game.gameID());
+            i++;
         }
         return output;
     }

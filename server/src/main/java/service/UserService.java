@@ -40,8 +40,15 @@ public class UserService {
     }
 
     public Results.LoginResult login(Requests.LoginRequest request) {
+        UserData user;
         try {
-            UserData user = userDao.getUser(request.username());
+            user = userDao.getUser(request.username());
+        } catch (BadDataRequestException e) {
+            return new Results.LoginResult(403,null,null,"Error: username not found");
+        } catch (DataAccessException e) {
+            return new Results.LoginResult(500,null,null,String.format("Error: %s",e.getMessage()));
+        }
+        try {
             if (!BCrypt.checkpw(request.password(), user.password())) {
                 return new Results.LoginResult(401,null,null,"Error: unauthorized");
             }
