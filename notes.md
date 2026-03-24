@@ -1106,4 +1106,104 @@ Want to use a slow hashing algorithm, or something that costs a lot of memory. T
 
 Used for data-in-motion. Need to know what it said in the first place, but don't want anyone to be able to overhear. Need to be two-way. Uses a key. Want a larger key to help your data be more secure.
 
-Symmetric or secret key: Same key is used for both encryption and decryption. Use a secure key exchange algorithm to exchange the symmetric key. 
+Symmetric or secret key: Same key is used for both encryption and decryption. Use a secure key exchange algorithm to exchange the symmetric key. AES.
+
+Asymmetric or Public key: Have two keys, one for encryption, one for decryption. The encryption key is public, such that anybody could use it, used to send a message to someone else. The decryption key is private. Don't need to securely exchange the key, or meet in person to exchange the key. Examples include RSA, Eliptic Curve, RLWE, lattice based. Not used for bulk encryption, but for secure key exchange, then that key will exchange everything else. Digital signatures. One of the most important inventions in the history of computing!
+
+Advantages and Disadvantages
+- Asymmetric can only encrypt so much data at a time
+- Asymmetric is slower
+- Must be stored securely
+
+Applications:
+- Protecting data as it traverses the network
+- Storing data in a database
+- Password managers
+
+## Secure Key Exchange
+
+Need to come up with a key, pass it, and not have anyone else find out. Use a public-private key pair. Send a random AES key using public-private key encryption.
+
+## HTTPS
+
+Encrypted HTTP requests. Does a secure key exchange, exchanges a symmetric key. First the client sends a random number, then the server sends a random number. Then, server sends public key to client, client sends server another random number encrypted with that public key. Both Client and Server use all three random numbers to generate the same symmetric key, and use this to exchange all the rest of its communications.
+
+Has a handshake to exchange a certificate, which exchanges public keys and certifies who the server is. Uses a third party service to create certificate files.
+
+Digital signature: signer runs data through a hash. Signer encrypts that using their private key. Signer sends data. The browser will validate that signature by hashing the cert file as well. Then it decrypts the hash using the given public key, and compares the two hashes. This ensures that the public key given and the hash given belong to the person they say they belong to.
+
+# WebSocket
+
+Sometimes, a server needs to initiate contact to send a message to a client, or to support peer to peer messaging. HTTP requests are always initiated by the client, so they don't support this very well. A fixed way to do this is to just pull the server and refresh the information every so often. However, this can waste effort and resources, and is very ineficient. Another fix is to send a request, and then the server won't respond until it has something to say. This is also horribly inefficient. 
+
+To fix this, we invented WebSocket. To start, you create a http endpoint that you classify as being a websocket. Then, when you connect to the endpoint, you include headers that tell it to upgrade to websocket. Then, each side can send messages asyncronously. A built in feature is called "ping/pong". You use this to know if the peer is still available. You send a ping message, and they respond with a pong. 
+
+Code example:
+```java
+public class SimpleEchoServer {
+  public static void main(String[] args) {
+    Javalin.create()
+      .get("/echo/{msg}", ctx -> ctx.result(stuff))
+      .ws("/ws", ws -> {
+          ws.onConnect(ctx -> {ctx.enableAutomaticPings(); System.out.println("Connected")})
+          ws.onMessage(ctx -> ctx.send("WebSocket response:" + ctx.message())); // ctx.message() is what was sent to the websocket
+          ws.onClose(ctx -> System.out.println("Websocket closed"));
+      })
+      .start(8080);
+  }
+}
+```
+You can also use ws.onConnect(handler). The handler class should implement WsConnectHandler, WsMessageHandler, WsClose0Handler with override methods handleConnect, handleMessage, and handleClose. It can have additional methods it can use to send messages to users.
+
+The server should also create a data object to keep track of connections, which keeps track of which sessions are in which games, and has the ability to broadcast because it holds all the sessions.
+
+Example:
+```
+String msg = notification.toString();
+for (Session c : connections.values()) {
+  if (c.isOpen()) {
+    if (!c.equals(excludedSession)) {
+      c.getRemote().sendString(msg)
+    }
+  }
+}
+```
+
+A handleMessage method may look like
+- Parse from Json
+- Depending on the parse, call other mehods
+
+Nested methods may look like
+- Create message string, or additional information
+- Use connection manager to send message
+
+Client side
+```java
+public class WsEchoClient extends Endpoint {
+  public Session session;
+  public static void main(String[] args) {
+    WsEchoClient client = new WsEchoClient();
+    Scanner scanner = new Scanner(System.in);
+    //Something something read input from user
+    client.send(info)
+  }
+  public WsEchoClient() {
+    URI uri = new URI("ws://localhost:8080/ws")
+    WebSocketContainer contianer = ContainerProvider.getWebSocketContainer();
+    session = container.connetToServer(this, uri);
+    this.session.addMessageHandler( new MessageHandler.Whole<String>() {
+      public void onMessage(String message) {
+        System.out.println(message);
+        System.out.println("\n Additional prompt")
+      }
+    });
+  }
+  public void send(String message) {
+    session.getBasicRemote().sendText(message);
+  }
+```
+
+Create a WebSocket Facade class to wrap functionality. However, the facade isn't allowed to talk to the user, it has to send it to the client ui. To do this, have Client implement NotificationHandler, with a method notify(Notification n), and then give the Client to the WebSocketFacade as the notification handler. Create your own NotificationHandler interface and Notification class.
+
+
+
