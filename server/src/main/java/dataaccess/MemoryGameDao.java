@@ -46,7 +46,18 @@ public class MemoryGameDao implements GameDaoInterface {
             }
         }
         throw new BadDataRequestException("Game ID not found");
-    };
+    }
+
+    @Override
+    public void updateGame(GameData updatedGame, int gameID) throws DataAccessException, BadDataRequestException {
+        for (GameData game : games) {
+            if (game.gameID() == gameID) {
+                games.remove(game);
+                games.add(gameID-1, updatedGame);
+                return;
+            }
+        }
+    }
 
     private boolean colorTaken(GameData game, ChessGame.TeamColor playerColor) {
         if (playerColor == ChessGame.TeamColor.WHITE) {

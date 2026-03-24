@@ -9,6 +9,7 @@ import io.javalin.http.Context;
 import model.AuthData;
 import model.UserData;
 import service.*;
+import websocket.WebSocketHandler;
 
 
 public class Server {
@@ -21,22 +22,10 @@ public class Server {
     private final GameService gameService;
     private final ClearService clearService;
     private Gson gson;
-
-//    public Server() {
-//        new Server(false);
-//    }
+    private final WebSocketHandler webSocketHandler;
 
     public Server() {
         boolean memory = false;
-
-        javalin = Javalin.create(config -> config.staticFiles.add("web"));
-        javalin.post("/user",this::register);
-        javalin.post("/session", this::login);
-        javalin.delete("/session",this::logout);
-        javalin.get("/game",this::listGames);
-        javalin.post("/game",this::createGame);
-        javalin.put("/game",this::joinGame);
-        javalin.delete("/db",this::clear);
 
         if (memory) {
             userDao = new MemoryUserDao();
@@ -55,6 +44,22 @@ public class Server {
         userService = new UserService(userDao, authDao);
         gameService = new GameService(gameDao, authDao);
         clearService = new ClearService(userDao,gameDao,authDao);
+
+        webSocketHandler = new WebSocketHandler(gameDao);
+
+        javalin = Javalin.create(config -> config.staticFiles.add("web"));
+        javalin.post("/user",this::register);
+        javalin.post("/session", this::login);
+        javalin.delete("/session",this::logout);
+        javalin.get("/game",this::listGames);
+        javalin.post("/game",this::createGame);
+        javalin.put("/game",this::joinGame);
+        javalin.delete("/db",this::clear);
+        javalin.ws("/ws", ws -> {
+            ws.onConnect(webSocketHandler);
+            ws.onMessage(webSocketHandler);
+            ws.onClose(webSocketHandler);
+        });
 
         gson = new GsonBuilder().enableComplexMapKeySerialization().create();
     }

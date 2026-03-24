@@ -66,6 +66,13 @@ public class SQLGameDao implements GameDaoInterface {
         executeUpdate(statement,username, json,gameID);
     };
 
+    @Override
+    public void updateGame(GameData updatedGame, int gameID) throws DataAccessException, BadDataRequestException {
+        String statement = "UPDATE games SET json = ? WHERE gameID = ?";
+        String json = gson.toJson(updatedGame);
+        executeUpdate(statement, json,gameID);
+    };
+
     private boolean colorTaken(GameData game, ChessGame.TeamColor playerColor) {
         if (playerColor == ChessGame.TeamColor.WHITE) {
             if (game.whiteUsername() == null) {

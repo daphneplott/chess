@@ -5,11 +5,13 @@ import chess.ChessPiece;
 import chess.ChessPosition;
 import model.AuthData;
 import model.GameData;
+import websocket.NotificationHandler;
+import websocket.messages.ServerMessage;
 
 import java.util.*;
 
 
-public class ChessClient {
+public class ChessClient implements NotificationHandler {
 
     private ServerFacade server;
     private Scanner scanner;
@@ -20,6 +22,7 @@ public class ChessClient {
     private GameData gameData;
     private ArrayList<GameData> games;
     private HashMap<Integer, Integer> ids = new HashMap<>();
+    private boolean observing = false;
 
 
     public ChessClient(String serverUrl) {
@@ -196,6 +199,7 @@ public class ChessClient {
                     if (gameID <= games.toArray().length && gameID > 0) {
                         joinedID = gameID;
                         joinedColor = "white";
+                        observing = true;
                         return "gameplay";
                     } else {
                         System.out.println("ID not found");
@@ -261,14 +265,35 @@ public class ChessClient {
     }
 
     private String gamePlay() {
-        // draw
-        // quit
-        // Returns "quit game"
+        // open websocket connection
+        // Send notification
         String input;
         String[] tokens;
         String cmd;
         gameData = games.get(joinedID - 1);
         System.out.println(drawBoard(joinedColor));
+        if (observing) {
+            while (true) {
+                System.out.print("[observing] >>> ");
+                input = scanner.nextLine();
+                tokens = input.toLowerCase().split(" ");
+                cmd = ((tokens.length > 0) ? tokens[0] : "help");
+                switch (cmd) {
+                    case "quit" -> {
+                        observing = false;
+                        //notify people
+                        return "quit game";
+                    }
+                    case "redraw" -> {
+                        System.out.println(drawBoard(joinedColor));
+                    }
+                    case "highlight" -> {
+                        // highlight helper
+                    }
+                }
+            }
+        }
+
         while (true) {
             System.out.print("[game play] >>> ");
             input = scanner.nextLine();
@@ -276,11 +301,35 @@ public class ChessClient {
             cmd = ((tokens.length > 0) ? tokens[0] : "help");
             switch (cmd) {
                 case "quit" -> {
+                    observing = false;
+                    // Notify people
                     return "quit game";
+                }
+                case "redraw" -> {
+                    System.out.println(drawBoard(joinedColor));
+                }
+                case "resign" -> {
+                    // Mark game as finished. Do not exit.
+                    // Move out of REPL
+                } case "move" -> {
+                    // Make sure it's your turn first
+                    // Check legal, make move, check for check/checkmate -
+                    //  - SERVER WILL DO THIS and UPDATE DATABASE
+                    // Send move notification
+                    // Send check/checkmate notification
+                    // Update board in database
+                } case "highlight" -> {
+                    // Local - check board for piece. Get legal moves, reprint board
                 }
                 default -> System.out.println(help("in game"));
             }
         }
+    }
+
+    @Override
+    public void notify(ServerMessage notification) {
+        DO SOMETHING;
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + notification.)
     }
 
     private String clean(String message) {
@@ -308,7 +357,14 @@ public class ChessClient {
                     "quit - exit application\n" +
                     "help - view possible commands";
         } else if (Objects.equals(where, "in game")) {
-            return "quit - exit current game\nhelp - view possible commands";
+            return "quit - exit current game" +
+                    "\nhelp - view possible commands" +
+                    "\nredraw - redraw chess board" +
+                    "\nmove <Start> <End> - move a peice from the start point to the end point, " +
+                    "positions should be of the form a1 or e6" +
+                    "\nresign - forfeit and end game" +
+                    "\nhighlight <Position> - highlights the legal moves of the selected position," +
+                    "positions should be of the form a1 or e6";
         } else {
             return "position not recognized";
         }
