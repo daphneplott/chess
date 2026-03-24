@@ -2,6 +2,8 @@ package websocket;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPosition;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import dataaccess.GameDaoInterface;
@@ -10,6 +12,8 @@ import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
+
+import java.util.ArrayList;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
@@ -52,23 +56,39 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void makeMove(String username, Integer gameID, String authToken, ChessMove move, Session session) {
-        // Get game with id
-        // Check if move is legal. If not, send only client error
-        // Make move in game
-        // update database
-        // Check if in check/checkmate
-        // Send load_game
-        // Send message about what move was made
-        // Send check/checkmate info
         try {
             GameData gameData = gameDao.getGame(gameID);
             ChessGame game = gameData.game();
-            game.makeMove();
+            game.makeMove(move);
+            gameDao.updateGame(gameData,gameID);
+            String start = parsePosition(move.getStartPosition());
+            String end = parsePosition(move.getEndPosition());
+            String message1 = String.format("%s moved the piece from %s to %s",username,start,end);
+            String teamName = (game.getTeamTurn() == ChessGame.TeamColor.WHITE) ? "White" : "Black";
+            String message2 = "";
+            if (game.isInCheckmate(game.getTeamTurn())) {
+                message2 = String.format("%s is in checkmate", teamName);
+            } else if (game.isInCheck(game.getTeamTurn())) {
+                message2 = String.format("%s is in check", teamName);
+            }
+            var notification3 = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME,gameData);
+            var notification1 = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,message1);
+            var notification2 = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,message2);
         } catch (DataAccessException e) {
             var notification = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: Could not connect to database");
-            connections.broacast(null, notification,gameID);
+            connections.broadcast(null, notification,gameID);
+        } catch (InvalidMoveException e) {
+            var notification = new ServerMessage(ServerMessage.ServerMessageType.ERROR,"Error: Invalid move");
+            connections.sendToOne(session, notification,gameID);
         }
+    }
 
+    private String parsePosition(ChessPosition pos) {
+        String[] change = {"a","b","c","d","e","f","g","h"};
+        String positionName = "";
+        positionName += change[pos.getRow() - 1];
+        positionName += pos.getColumn();
+        return positionName;
     }
 
     private void connect(String username, Integer gameID, String color, Session session) {
