@@ -20,12 +20,31 @@ public class ConnectionManager {
         connections.remove(session);
     }
 
-    public void broadcast(Session exclude, ServerMessage notification, Integer gameID) throws IOException {
+    public void broadcast(Session exclude, ServerMessage notification, Integer gameID) {
         String msg = gson.toJson(notification);
         for (Session c : connections.keySet(gameID)) {
             if (c.isOpen()) {
                 if (!c.equals(exclude)) {
-                    c.getRemote().sendString(msg);
+                    try {
+                        c.getRemote().sendString(msg);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }
+    }
+
+    public void sendToOne(Session session, ServerMessage notification, Integer gameID) {
+        String msg = gson.toJson(notification);
+        for (Session c : connections.keySet(gameID)) {
+            if (c.isOpen()) {
+                if (c.equals(session)) {
+                    try {
+                        c.getRemote().sendString(msg);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
         }
