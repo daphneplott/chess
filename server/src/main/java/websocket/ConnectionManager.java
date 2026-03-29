@@ -12,17 +12,29 @@ public class ConnectionManager {
     public final ConcurrentHashMap<Session, Integer> connections = new ConcurrentHashMap<>();
     Gson gson = new Gson();
 
+    public void record(Session session) {
+        if (!connections.containsKey(session)) {
+            connections.put(session, -1);
+        }
+    }
+
     public void add(Session session, Integer gameID) {
-        connections.put(session, gameID);
+        connections.replace(session, gameID);
     }
 
     public void remove(Session session) {
-        connections.remove(session);
+        connections.replace(session, -1);
     }
 
     public void broadcast(Session exclude, ServerMessage notification, Integer gameID) {
         String msg = gson.toJson(notification);
+        System.out.println("GAMEID " + gameID);
         for (Session c : connections.keySet(gameID)) {
+            System.out.println(c);
+            System.out.println(connections.get(c));
+            if (!connections.get(c).equals(gameID)) {
+                continue;
+            }
             if (c.isOpen()) {
                 if (!c.equals(exclude)) {
                     try {
@@ -35,9 +47,9 @@ public class ConnectionManager {
         }
     }
 
-    public void sendToOne(Session session, ServerMessage notification, Integer gameID) {
+    public void sendToOne(Session session, ServerMessage notification) {
         String msg = gson.toJson(notification);
-        for (Session c : connections.keySet(gameID)) {
+        for (Session c : connections.keySet()) {
             if (c.isOpen()) {
                 if (c.equals(session)) {
                     try {

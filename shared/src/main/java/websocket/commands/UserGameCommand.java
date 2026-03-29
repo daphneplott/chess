@@ -24,6 +24,12 @@ public class UserGameCommand {
 
     private final String color;
 
+    public UserGameCommand(CommandType commandType, String authToken, Integer gameID, ChessMove move) {
+        // Find username based on authToken query DAO
+        // Find color based on gameID query DAO
+        this(commandType, authToken, gameID, null, null, move);
+    }
+
     public UserGameCommand(CommandType commandType, String authToken, Integer gameID, String username, String color) {
         this.commandType = commandType;
         this.authToken = authToken;
@@ -89,5 +95,17 @@ public class UserGameCommand {
     @Override
     public int hashCode() {
         return Objects.hash(getCommandType(), getAuthToken(), getGameID());
+    }
+
+    @Override
+    public String toString() {
+        return "UserGameCommand{" +
+                "commandType=" + commandType +
+                ", authToken='" + authToken + '\'' +
+                ", gameID=" + gameID +
+                ", username='" + username + '\'' +
+                ", move=" + move +
+                ", color='" + color + '\'' +
+                '}';
     }
 }
