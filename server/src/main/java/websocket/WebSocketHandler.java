@@ -44,6 +44,20 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private void resign(String username, Integer gameID, Session session) {
         String message = String.format("%s has forfeited", username);
+        try {
+            GameData currentGame = gameDao.getGame(gameID);
+            GameData updatedGame;
+            if (currentGame.whiteUsername().equals(username)) {
+                updatedGame = new GameData(currentGame.gameID(),null,currentGame.blackUsername(),currentGame.gameName(),currentGame.game());
+            } else {
+                updatedGame = new GameData(currentGame.gameID(),currentGame.whiteUsername(),null,currentGame.gameName(),currentGame.game());
+            }
+            gameDao.updateGame(updatedGame,gameID);
+        } catch (DataAccessException e) {
+            var notification = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: Could not connect to database");
+            connections.broadcast(null, notification,gameID);
+            return;
+        }
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
         connections.broadcast(session, notification, gameID);
     }
@@ -73,7 +87,13 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             }
             var notification3 = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME,gameData);
             var notification1 = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,message1);
-            var notification2 = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,message2);
+            connections.broadcast(null, notification3, gameID);
+            connections.broadcast(null, notification1, gameID);
+
+            if (!message2.isEmpty()) {
+                var notification2 = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,message2);
+                connections.broadcast(null, notification2, gameID);
+            }
         } catch (DataAccessException e) {
             var notification = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: Could not connect to database");
             connections.broadcast(null, notification,gameID);

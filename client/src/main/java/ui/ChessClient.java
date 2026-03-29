@@ -10,8 +10,11 @@ import websocket.NotificationHandler;
 import websocket.WebSocketFacade;
 import websocket.messages.ServerMessage;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class ChessClient implements NotificationHandler {
@@ -28,6 +31,7 @@ public class ChessClient implements NotificationHandler {
     private HashMap<Integer, Integer> ids = new HashMap<>();
     private boolean observing = false;
     private boolean gameOngoing = true;
+    private ArrayList<Integer> endedGames = new ArrayList<>();
 
 
     public ChessClient(String serverUrl) {
@@ -271,11 +275,16 @@ public class ChessClient implements NotificationHandler {
     }
 
     private String gamePlay() {
-        ws.enterGame();
         String input;
         String[] tokens;
         String cmd;
         gameData = games.get(joinedID - 1);
+        try {
+            ws.enterGame(auth.username(),gameData.gameID(),joinedColor);
+        } catch (IOException e) {
+            System.out.println("Error joining game, please try again");
+            return "quit game";
+        }
         System.out.println(drawBoard(joinedColor));
         if (observing) {
             while (true) {
@@ -286,8 +295,12 @@ public class ChessClient implements NotificationHandler {
                 switch (cmd) {
                     case "quit" -> {
                         observing = false;
-                        ws.leaveGame();
-                        return "quit game";
+                        try {
+                            ws.leaveGame(auth.username(),gameData.gameID());
+                            return "quit game";
+                        } catch (IOException e) {
+                            System.out.println("Error leaving game. Please try again.");
+                        }
                     }
                     case "redraw" -> {
                         System.out.println(drawBoard(joinedColor));
@@ -311,6 +324,9 @@ public class ChessClient implements NotificationHandler {
             }
         }
         gameOngoing = true;
+        if (endedGames.contains(gameData.gameID())) {
+            gameOngoing = false;
+        }
         while (gameOngoing) {
             System.out.print("[game play] >>> ");
             input = scanner.nextLine();
@@ -319,8 +335,12 @@ public class ChessClient implements NotificationHandler {
             switch (cmd) {
                 case "quit" -> {
                     observing = false;
-                    ws.leaveGame();
-                    return "quit game";
+                    try {
+                        ws.leaveGame(auth.username(),gameData.gameID());
+                        return "quit game";
+                    } catch (IOException e) {
+                        System.out.println("Error leaving game. Please try again.");
+                    }
                 }
                 case "redraw" -> {
                     System.out.println(drawBoard(joinedColor));
@@ -329,9 +349,13 @@ public class ChessClient implements NotificationHandler {
                     System.out.print("You are about to resign, confirm? [y/n]: ");
                     String confirm = scanner.nextLine();
                     if (confirm.toLowerCase().startsWith("y")) {
-                        TO DO; // Mark game as finished.
-                        ws.resign();
-                        gameOngoing = false;
+                        try {
+                            ws.resign(auth.username(),gameData.gameID());
+                            endedGames.add(gameData.gameID());
+                            gameOngoing = false;
+                        } catch (IOException e) {
+                            System.out.println("Error resigning. Please try again.");
+                        }
                     }
                 } case "move" -> {
                     ChessGame.TeamColor teamColor = (joinedColor.equals("white")) ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
@@ -341,15 +365,19 @@ public class ChessClient implements NotificationHandler {
                     if (tokens.length == 3) {
                         ChessPosition start;
                         ChessPosition end;
+                        ChessPiece.PieceType promotion;
                         try {
                             start = parsePosition(tokens[1]);
                             end = parsePosition(tokens[2]);
-                            ws.makeMove();
+                            promotion = parsePromotion(tokens[3]);
+                            ws.makeMove(auth.username(),gameData.gameID(),auth.authToken(),new ChessMove(start, end, promotion));
                         } catch (ParseException e) {
-                            System.out.println("Expected: move <Start> <End> with positions of form a6");
+                            System.out.println("Expected: move <Start> <End> <Promotion> with positions of form a6, Promotion as a piece type or 'null'");
+                        } catch (IOException e) {
+                            System.out.println("Error making move. Please try again.");
                         }
                     } else {
-                        System.out.println("Expected: move <Start> <End> with positions of form a6");
+                        System.out.println("Expected: move <Start> <End> <Promotion> with positions of form a6, Promotion as a piece type or 'null'");
                     }
                 } case "highlight" -> {
                     if (tokens.length == 2) {
@@ -374,11 +402,15 @@ public class ChessClient implements NotificationHandler {
             switch (cmd) {
                 case "quit" -> {
                     observing = false;
-                    ws.leaveGame();
-                    return "quit game";
+                    try {
+                        ws.leaveGame(auth.username(),gameData.gameID());
+                        return "quit game";
+                    } catch (IOException e) {
+                        System.out.println("Error leaving game. Please try again.");
+                    }
                 }
                 case "help" -> {
-                    System.out.println("post resign");
+                    System.out.println(help("post resign"));
                 }
             }
         }
@@ -411,6 +443,18 @@ public class ChessClient implements NotificationHandler {
         return new ChessPosition(rowInt,colInt);
     }
 
+    private ChessPiece.PieceType parsePromotion(String promotion) throws ParseException {
+        promotion = promotion.toLowerCase();
+        return switch (promotion) {
+            case "null" -> null;
+            case "queen" -> ChessPiece.PieceType.QUEEN;
+            case "knight" -> ChessPiece.PieceType.KNIGHT;
+            case "rook" -> ChessPiece.PieceType.ROOK;
+            case "bishop" -> ChessPiece.PieceType.BISHOP;
+            default -> throw new ParseException("Could not parse", 2);
+        };
+    }
+
     @Override
     public void notify(ServerMessage notification) {
         if (notification.getServerMessageType().equals(ServerMessage.ServerMessageType.LOAD_GAME)) {
@@ -418,8 +462,14 @@ public class ChessClient implements NotificationHandler {
         } else {
             System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + notification.getMessage()+
                     EscapeSequences.RESET_TEXT_COLOR);
-            // IF resign, gameOngoing = false;
-            // IF checkmate, gameOngoing = false;
+            Pattern forfeit = Pattern.compile("forfeited");
+            Pattern checkmate = Pattern.compile("checkmate");
+            Matcher forfeitMatcher = forfeit.matcher(notification.getMessage());
+            Matcher checkmateMatcher = checkmate.matcher(notification.getMessage());
+            if (forfeitMatcher.find() || checkmateMatcher.find()) {
+                gameOngoing = false;
+                endedGames.add(gameData.gameID());
+            }
         }
     }
 
@@ -451,8 +501,8 @@ public class ChessClient implements NotificationHandler {
             return "quit - exit current game" +
                     "\nhelp - view possible commands" +
                     "\nredraw - redraw chess board" +
-                    "\nmove <Start> <End> - move a peice from the start point to the end point, " +
-                    "positions should be of the form a1 or e6" +
+                    "\nmove <Start> <End> <Promotion> - move a piece from the start point to the end point, " +
+                    "positions should be of the form a1 or e6, Promotion should be a piece type or 'null'" +
                     "\nresign - forfeit and end game" +
                     "\nhighlight <Position> - highlights the legal moves of the selected position," +
                     "positions should be of the form a1 or e6";
