@@ -22,13 +22,17 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private final ConnectionManager connections = new ConnectionManager();
     Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
-    private GameDaoInterface gameDao;
-    private AuthDaoInterface authDao;
+    private final GameDaoInterface gameDao;
+    private final AuthDaoInterface authDao;
     private ArrayList<Integer> endedGames;
 
     public WebSocketHandler(GameDaoInterface gameDao, AuthDaoInterface authDao) {
         this.gameDao = gameDao;
         this.authDao = authDao;
+        endedGames = new ArrayList<>();
+    }
+
+    public void clear() {
         endedGames = new ArrayList<>();
     }
 
@@ -193,7 +197,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         connections.add(session, gameID);
         String message;
 
-        GameData game = null;
+        GameData game;
         try {
             game = gameDao.getGame(gameID);
         } catch (DataAccessException e) {

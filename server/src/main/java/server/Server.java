@@ -1,13 +1,10 @@
 package server;
 
-import chess.ChessGame;
 import com.google.gson.GsonBuilder;
 import dataaccess.*;
 import io.javalin.*;
 import com.google.gson.Gson;
 import io.javalin.http.Context;
-import model.AuthData;
-import model.UserData;
 import service.*;
 import websocket.WebSocketHandler;
 
@@ -21,7 +18,7 @@ public class Server {
     private final UserService userService;
     private final GameService gameService;
     private final ClearService clearService;
-    private Gson gson;
+    private final Gson gson;
     private final WebSocketHandler webSocketHandler;
 
     public Server() {
@@ -156,6 +153,7 @@ public class Server {
 
     private void clear(Context ctx) {
         var result = clearService.clear();
+        webSocketHandler.clear();
         ctx.result(gson.toJson(result));
         ctx.status(result.code());
     }
