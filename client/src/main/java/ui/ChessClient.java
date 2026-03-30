@@ -305,34 +305,9 @@ public class ChessClient implements NotificationHandler {
                 input = scanner.nextLine();
                 tokens = input.toLowerCase().split(" ");
                 cmd = ((tokens.length > 0) ? tokens[0] : "help");
-                switch (cmd) {
-                    case "quit" -> {
-                        observing = false;
-                        try {
-                            ws.leaveGame(auth.username(),gameData.gameID());
-                            return "quit game";
-                        } catch (IOException e) {
-                            System.out.println("Error leaving game. Please try again.");
-                        }
-                    }
-                    case "redraw" -> {
-                        System.out.println(drawBoard(orientationColor));
-                    }
-                    case "highlight" -> {
-                        if (tokens.length == 2) {
-                            try {
-                                ChessPosition pos = parsePosition(tokens[1]);
-                                System.out.println(highlight(pos));
-                            } catch (ParseException e) {
-                                System.out.println("Expected: highlight <Position> with position of form a6");
-                            }
-                        } else {
-                            System.out.println("Expected: highlight <Position> with position of form a6");
-                        }
-                    }
-                    case "help" -> {
-                        System.out.println(help("observing"));
-                    }
+                String returnedValue = evalObserving(cmd, tokens);
+                if (!returnedValue.isEmpty()) {
+                    return returnedValue;
                 }
             }
         }
@@ -369,6 +344,30 @@ public class ChessClient implements NotificationHandler {
                 System.out.println(help("post resign"));
             }
         }
+    }
+
+    private String evalObserving(String cmd, String[] tokens) {
+        switch (cmd) {
+            case "quit" -> {
+                observing = false;
+                try {
+                    ws.leaveGame(auth.username(),gameData.gameID());
+                    return "quit game";
+                } catch (IOException e) {
+                    System.out.println("Error leaving game. Please try again.");
+                }
+            }
+            case "redraw" -> {
+                System.out.println(drawBoard(orientationColor));
+            }
+            case "highlight" -> {
+                highlightHelper(tokens);
+            }
+            case "help" -> {
+                System.out.println(help("observing"));
+            }
+        }
+        return "";
     }
 
     private String evalGamePlay(String cmd, String[] tokens) {
@@ -421,20 +420,24 @@ public class ChessClient implements NotificationHandler {
                     System.out.println("Expected: move <Start> <End> <Promotion> with positions of form a6, Promotion as a piece type or 'null'");
                 }
             } case "highlight" -> {
-                if (tokens.length == 2) {
-                    try {
-                        ChessPosition pos = parsePosition(tokens[1]);
-                        System.out.println(highlight(pos));
-                    } catch (ParseException e) {
-                        System.out.println("Expected: highlight <Position> with position of form a6");
-                    }
-                } else {
-                    System.out.println("Expected: highlight <Position> with position of form a6");
-                }
+                highlightHelper(tokens);
             }
             default -> System.out.println(help("in game"));
         }
         return "";
+    }
+
+    private void highlightHelper(String[] tokens) {
+        if (tokens.length == 2) {
+            try {
+                ChessPosition pos = parsePosition(tokens[1]);
+                System.out.println(highlight(pos));
+            } catch (ParseException e) {
+                System.out.println("Expected: highlight <Position> with position of form a6");
+            }
+        } else {
+            System.out.println("Expected: highlight <Position> with position of form a6");
+        }
     }
 
     private ChessPosition parsePosition(String pos) throws ParseException {
@@ -586,7 +589,6 @@ public class ChessClient implements NotificationHandler {
         for (ChessMove c : validMoves) {
             endPositions.add(c.getEndPosition());
         }
-
         String[][] board = new String[10][10];
         String background = EscapeSequences.SET_BG_COLOR_LIGHT_GREY + EscapeSequences.SET_TEXT_COLOR_DARK_GREY;
         String white = EscapeSequences.SET_BG_COLOR_WHITE;
@@ -594,6 +596,77 @@ public class ChessClient implements NotificationHandler {
         String yellow = EscapeSequences.SET_BG_COLOR_YELLOW;
         String green = EscapeSequences.SET_BG_COLOR_GREEN;
         String letter;
+        HashMap<ChessPiece, String> pieceMapper = createPieceMapper();
+        for (int i = 0; i < 10; i++) {
+            switch(i) {
+                case(1) -> letter = "\u2003a ";
+                case(2) -> letter = "\u2003b ";
+                case(3) -> letter = "\u2003c ";
+                case(4) -> letter = "\u2003d ";
+                case(5) -> letter = "\u2003e ";
+                case(6) -> letter = "\u2003f ";
+                case(7) -> letter = "\u2003g ";
+                case(8) -> letter = "\u2003h ";
+                default -> letter = background + EscapeSequences.EMPTY;
+            }
+            board[0][i] = letter;
+            board[9][i] = letter;
+            if (i < 9 && i > 0) {
+                board[i][0] = background + String.format("\u2003%d ",i);
+                board[i][9] = background + String.format("\u2003%d ",i);
+            }
+        }
+        var chessBoard = gameData.game().getBoard();
+        for (int i = 1; i < 9; i++) {
+            for (int j = 1; j < 9; j++) {
+                ChessPosition position = new ChessPosition(i,j);
+                ChessPiece piece = chessBoard.getPiece(position);
+                if (position.equals(highlight)) {
+                    if (piece == null) {
+                        board[i][j] = yellow + EscapeSequences.EMPTY;
+                    } else {
+                        board[i][j] = yellow + pieceMapper.get(piece);
+                    }
+                } else if (endPositions.contains(position)) {
+                    if (piece == null) {
+                        board[i][j] = green + EscapeSequences.EMPTY;
+                    } else {
+                        board[i][j] = green + pieceMapper.get(piece);
+                    }
+                } else {
+                    if ((i + j) % 2 == 0 && piece == null) {
+                        board[i][j] = black + EscapeSequences.EMPTY;
+                    } else if ((i + j) % 2 == 0 && piece != null) {
+                        board[i][j] = black + pieceMapper.get(piece);
+                    } else if (piece == null) {
+                        board[i][j] = white + EscapeSequences.EMPTY;
+                    } else {
+                        board[i][j] = white + pieceMapper.get(piece);
+                    }
+                }
+            }
+        }
+        String output = "";
+        if (Objects.equals(color, "white")) {
+            for (int i = 0; i < 10; i++) {
+                for (int j = 0; j < 10; j++) {
+                    output += board[9-i][j];
+                }
+                output += EscapeSequences.RESET_BG_COLOR + EscapeSequences.RESET_TEXT_COLOR + "\n";
+            }
+        } else {
+            for (int i = 0; i < 10; i++) {
+                for (int j = 0; j < 10; j++) {
+                    output += board[i][9-j];
+                }
+                output += EscapeSequences.RESET_BG_COLOR + EscapeSequences.RESET_TEXT_COLOR + "\n";
+            }
+        }
+        output += EscapeSequences.RESET_BG_COLOR + EscapeSequences.RESET_TEXT_COLOR;
+        return output;
+    }
+
+    private HashMap<ChessPiece, String> createPieceMapper() {
         HashMap<ChessPiece, String> pieceMapper = new HashMap<>();
         pieceMapper.put(new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KING),
                 EscapeSequences.SET_TEXT_COLOR_MAGENTA + EscapeSequences.WHITE_KING);
@@ -619,82 +692,7 @@ public class ChessClient implements NotificationHandler {
                 EscapeSequences.SET_TEXT_COLOR_BLUE+ EscapeSequences.BLACK_PAWN);
         pieceMapper.put(new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK),
                 EscapeSequences.SET_TEXT_COLOR_BLUE+ EscapeSequences.BLACK_ROOK);
-
-        for (int i = 0; i < 10; i++) {
-            switch(i) {
-                case(1) -> letter = "\u2003a ";
-                case(2) -> letter = "\u2003b ";
-                case(3) -> letter = "\u2003c ";
-                case(4) -> letter = "\u2003d ";
-                case(5) -> letter = "\u2003e ";
-                case(6) -> letter = "\u2003f ";
-                case(7) -> letter = "\u2003g ";
-                case(8) -> letter = "\u2003h ";
-                default -> letter = background + EscapeSequences.EMPTY;
-            }
-            board[0][i] = letter;
-            board[9][i] = letter;
-            if (i < 9 && i > 0) {
-                board[i][0] = background + String.format("\u2003%d ",i);
-                board[i][9] = background + String.format("\u2003%d ",i);
-            }
-        }
-
-        var chessBoard = gameData.game().getBoard();
-
-        for (int i = 1; i < 9; i++) {
-            for (int j = 1; j < 9; j++) {
-                ChessPosition position = new ChessPosition(i,j);
-                ChessPiece piece = chessBoard.getPiece(position);
-                if (position.equals(highlight)) {
-                    if (piece == null) {
-                        board[i][j] = yellow + EscapeSequences.EMPTY;
-                    } else {
-                        board[i][j] = yellow + pieceMapper.get(piece);
-                    }
-                } else if (endPositions.contains(position)) {
-                    if (piece == null) {
-                        board[i][j] = green + EscapeSequences.EMPTY;
-                    } else {
-                        board[i][j] = green + pieceMapper.get(piece);
-                    }
-                } else {
-                    if ((i + j) % 2 == 0) {
-                        if (piece == null) {
-                            board[i][j] = black + EscapeSequences.EMPTY;
-                        } else {
-                            board[i][j] = black + pieceMapper.get(piece);
-                        }
-                    } else {
-                        if (piece == null) {
-                            board[i][j] = white + EscapeSequences.EMPTY;
-                        } else {
-                            board[i][j] = white + pieceMapper.get(piece);
-                        }
-                    }
-                }
-            }
-        }
-
-        String output = "";
-
-        if (Objects.equals(color, "white")) {
-            for (int i = 0; i < 10; i++) {
-                for (int j = 0; j < 10; j++) {
-                    output += board[9-i][j];
-                }
-                output += EscapeSequences.RESET_BG_COLOR + EscapeSequences.RESET_TEXT_COLOR + "\n";
-            }
-        } else {
-            for (int i = 0; i < 10; i++) {
-                for (int j = 0; j < 10; j++) {
-                    output += board[i][9-j];
-                }
-                output += EscapeSequences.RESET_BG_COLOR + EscapeSequences.RESET_TEXT_COLOR + "\n";
-            }
-        }
-        output += EscapeSequences.RESET_BG_COLOR + EscapeSequences.RESET_TEXT_COLOR;
-        return output;
+        return pieceMapper;
     }
 
     private String highlight(ChessPosition position) {
