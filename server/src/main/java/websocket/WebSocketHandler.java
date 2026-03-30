@@ -5,6 +5,7 @@ import chess.ChessMove;
 import chess.ChessPosition;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import dataaccess.AuthDaoInterface;
 import dataaccess.BadDataRequestException;
 import dataaccess.DataAccessException;
@@ -20,14 +21,15 @@ import java.util.ArrayList;
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
     private final ConnectionManager connections = new ConnectionManager();
-    Gson gson = new Gson();
+    Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
     private GameDaoInterface gameDao;
     private AuthDaoInterface authDao;
-    private ArrayList<Integer> endedGames = new ArrayList<>();
+    private ArrayList<Integer> endedGames;
 
     public WebSocketHandler(GameDaoInterface gameDao, AuthDaoInterface authDao) {
         this.gameDao = gameDao;
         this.authDao = authDao;
+        endedGames = new ArrayList<>();
     }
 
     @Override
@@ -39,9 +41,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     @Override
     public void handleMessage(WsMessageContext ctx) {
         connections.record(ctx.session);
-
         UserGameCommand action = gson.fromJson(ctx.message(),UserGameCommand.class);
-
         String username;
         if (action.getUsername() != null && !action.getUsername().equals("null")) {
             username = action.getUsername();
@@ -59,32 +59,30 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             }
         }
 
-        GameData game = null;
-        String color = action.getColor();
-        ChessGame.TeamColor teamColor = null;
-        if (color == null || color.equals("null")) {
-            try {
-                game = gameDao.getGame(action.getGameID());
-                if (username.equals(game.whiteUsername())) {
-                    color = "white";
-                    teamColor = ChessGame.TeamColor.WHITE;
-                } else if (username.equals(game.blackUsername())) {
-                    color = "black";
-                    teamColor = ChessGame.TeamColor.BLACK;
-                } else {
-                    color = "observer";
-                }
-            } catch (DataAccessException e) {
-                var notification = new ServerMessage(ServerMessage.ServerMessageType.ERROR, null, "Error: Could not connect to database");
-                connections.sendToOne(ctx.session, notification);
-                return;
-            } catch (BadDataRequestException e) {
-                var notification = new ServerMessage(ServerMessage.ServerMessageType.ERROR, null, "Error: Game ID not found");
-                connections.sendToOne(ctx.session, notification);
-                return;
+        GameData game;
+        String color;
+        ChessGame.TeamColor teamColor;
+        try {
+            game = gameDao.getGame(action.getGameID());
+            if (username.equals(game.whiteUsername())) {
+                color = "white";
+                teamColor = ChessGame.TeamColor.WHITE;
+            } else if (username.equals(game.blackUsername())) {
+                color = "black";
+                teamColor = ChessGame.TeamColor.BLACK;
+            } else {
+                color = "observer";
+                teamColor = null;
             }
+        } catch (DataAccessException e) {
+            var notification = new ServerMessage(ServerMessage.ServerMessageType.ERROR, null, "Error: Could not connect to database");
+            connections.sendToOne(ctx.session, notification);
+            return;
+        } catch (BadDataRequestException e) {
+            var notification = new ServerMessage(ServerMessage.ServerMessageType.ERROR, null, "Error: Game ID not found");
+            connections.sendToOne(ctx.session, notification);
+            return;
         }
-
         switch (action.getCommandType()) {
             case CONNECT -> connect(username,action.getGameID(), color,ctx.session);
             case MAKE_MOVE -> makeMove(username,action.getGameID(),action.getAuthToken(), action.getMove(), ctx.session,teamColor);
@@ -94,7 +92,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void resign(String username, Integer gameID, Session session, String color) {
-
         if ("observer".equals(color)) {
             var notification = new ServerMessage(ServerMessage.ServerMessageType.ERROR,null,"Error: observer cannot resign");
             connections.sendToOne(session, notification);
@@ -102,14 +99,12 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
 
         if (endedGames.contains(gameID)) {
-            var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,"Error: game has already ended",null);
-            connections.broadcast(null, notification, gameID);
+            var notification = new ServerMessage(ServerMessage.ServerMessageType.ERROR, null,"Error: game has already ended");
+            connections.sendToOne(session, notification);
             return;
         }
 
         endedGames.add(gameID);
-
-        System.out.println(username + session);
 
         String message = String.format("%s has forfeited", username);
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message,null);
@@ -148,7 +143,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             GameData gameData = gameDao.getGame(gameID);
             ChessGame game = gameData.game();
             if (!game.getTeamTurn().equals(color)) {
-                var notification = new ServerMessage(ServerMessage.ServerMessageType.ERROR,null,"Error: Invalid move");
+                var notification = new ServerMessage(ServerMessage.ServerMessageType.ERROR,null,"Error: not your turn");
                 connections.sendToOne(session, notification);
                 return;
             }
@@ -166,8 +161,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             }
             var notification3 = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME,gameData);
             var notification1 = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,message1,null);
-            connections.broadcast(null, notification3, gameID);
+
             connections.broadcast(session, notification1, gameID);
+            connections.broadcast(null, notification3, gameID); // Load Game
 
             if (!message2.isEmpty()) {
                 var notification2 = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,message2,null);
@@ -188,8 +184,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private String parsePosition(ChessPosition pos) {
         String[] change = {"a","b","c","d","e","f","g","h"};
         String positionName = "";
-        positionName += change[pos.getRow() - 1];
-        positionName += pos.getColumn();
+        positionName += change[pos.getColumn() - 1];
+        positionName += pos.getRow();
         return positionName;
     }
 

@@ -47,6 +47,10 @@ public class ServerMessage {
         return this.message;
     }
 
+    public String getErrorMessage() {
+        return this.errorMessage;
+    }
+
     public GameData getGame() {
         return this.game;
     }
@@ -65,5 +69,15 @@ public class ServerMessage {
     @Override
     public int hashCode() {
         return Objects.hash(getServerMessageType());
+    }
+
+    @Override
+    public String toString() {
+        return "ServerMessage{" +
+                "serverMessageType=" + serverMessageType +
+                ", message='" + message + '\'' +
+                ", game=" + game +
+                ", errorMessage='" + errorMessage + '\'' +
+                '}';
     }
 }

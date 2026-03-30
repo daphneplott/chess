@@ -2,6 +2,7 @@ package websocket;
 
 import chess.ChessMove;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import jakarta.websocket.*;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
@@ -14,7 +15,7 @@ public class WebSocketFacade extends Endpoint {
 
     Session session;
     NotificationHandler notificationHandler;
-    Gson gson = new Gson();
+    Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
 
     @Override
     public void onOpen(Session session, EndpointConfig endpointConfig) {}

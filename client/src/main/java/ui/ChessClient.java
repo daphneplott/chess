@@ -25,7 +25,7 @@ public class ChessClient implements NotificationHandler {
     private boolean authenticated = false;
     private AuthData auth;
     private int joinedID;
-    private String joinedColor;
+    private String orientationColor;
     private GameData gameData;
     private ArrayList<GameData> games;
     private HashMap<Integer, Integer> ids = new HashMap<>();
@@ -189,6 +189,14 @@ public class ChessClient implements NotificationHandler {
                 }
             }
             case "list" -> {
+                ServerFacade.ListGamesResponse listGamesResponse = server.list(auth);
+                if (listGamesResponse.responseCode() == 200) {
+                    games = listGamesResponse.list();
+                } else if (listGamesResponse.responseCode() == 401) {
+                    System.out.println("Could not access list of games, error: unauthorized");
+                } else if (listGamesResponse.responseCode() == 500) {
+                    System.out.println("Something went wrong on our side. Please try again.");
+                }
                 System.out.println(outputGames());
             }
             case "play" -> {
@@ -208,7 +216,7 @@ public class ChessClient implements NotificationHandler {
                     }
                     if (gameID <= games.toArray().length && gameID > 0) {
                         joinedID = gameID;
-                        joinedColor = "white";
+                        orientationColor = "white";
                         observing = true;
                         return "gameplay";
                     } else {
@@ -238,7 +246,7 @@ public class ChessClient implements NotificationHandler {
                 if ( (Objects.equals(games.get(gameId-1).blackUsername(), auth.username()) && tokens[2].equals("black")) ||
                         (Objects.equals(games.get(gameId-1).whiteUsername(), auth.username()) && tokens[2].equals("white"))) {
                     joinedID = gameId;
-                    joinedColor = tokens[2];
+                    orientationColor = tokens[2];
                     return "gameplay";
                 }
                 else {
@@ -247,7 +255,7 @@ public class ChessClient implements NotificationHandler {
                     ServerFacade.LogoutJoinResponse response = server.join(newTokens, auth);
                     if (response.responseCode() == 200) {
                         joinedID = gameId;
-                        joinedColor = tokens[2];
+                        orientationColor = tokens[2];
                         return "gameplay";
                     } else if (response.responseCode() == 401) {
                         System.out.println("Unauthorized");
@@ -279,13 +287,18 @@ public class ChessClient implements NotificationHandler {
         String[] tokens;
         String cmd;
         gameData = games.get(joinedID - 1);
+        String joinedColor;
+        if (observing) {
+            joinedColor = "observer";
+        } else {
+            joinedColor = orientationColor;
+        }
         try {
-            ws.enterGame(auth.username(),gameData.gameID(),joinedColor);
+            ws.enterGame(auth.username(),gameData.gameID(), joinedColor);
         } catch (IOException e) {
             System.out.println("Error joining game, please try again");
             return "quit game";
         }
-        System.out.println(drawBoard(joinedColor));
         if (observing) {
             while (true) {
                 System.out.print("[observing] >>> ");
@@ -303,7 +316,7 @@ public class ChessClient implements NotificationHandler {
                         }
                     }
                     case "redraw" -> {
-                        System.out.println(drawBoard(joinedColor));
+                        System.out.println(drawBoard(orientationColor));
                     }
                     case "highlight" -> {
                         if (tokens.length == 2) {
@@ -323,75 +336,20 @@ public class ChessClient implements NotificationHandler {
                 }
             }
         }
-        gameOngoing = true;
-        if (endedGames.contains(gameData.gameID())) {
-            gameOngoing = false;
-        }
+        gameOngoing = !endedGames.contains(gameData.gameID());
+
         while (gameOngoing) {
             System.out.print("[game play] >>> ");
             input = scanner.nextLine();
+            if (!gameOngoing) {
+                observing = true;
+                break;
+            }
             tokens = input.toLowerCase().split(" ");
             cmd = ((tokens.length > 0) ? tokens[0] : "help");
-            switch (cmd) {
-                case "quit" -> {
-                    observing = false;
-                    try {
-                        ws.leaveGame(auth.username(),gameData.gameID());
-                        return "quit game";
-                    } catch (IOException e) {
-                        System.out.println("Error leaving game. Please try again.");
-                    }
-                }
-                case "redraw" -> {
-                    System.out.println(drawBoard(joinedColor));
-                }
-                case "resign" -> {
-                    System.out.print("You are about to resign, confirm? [y/n]: ");
-                    String confirm = scanner.nextLine();
-                    if (confirm.toLowerCase().startsWith("y")) {
-                        try {
-                            ws.resign(auth.username(),gameData.gameID());
-                            endedGames.add(gameData.gameID());
-                            gameOngoing = false;
-                        } catch (IOException e) {
-                            System.out.println("Error resigning. Please try again.");
-                        }
-                    }
-                } case "move" -> {
-                    ChessGame.TeamColor teamColor = (joinedColor.equals("white")) ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
-                    if (!gameData.game().getTeamTurn().equals(teamColor)) {
-                        System.out.println("Error: not your turn");
-                    }
-                    if (tokens.length == 3) {
-                        ChessPosition start;
-                        ChessPosition end;
-                        ChessPiece.PieceType promotion;
-                        try {
-                            start = parsePosition(tokens[1]);
-                            end = parsePosition(tokens[2]);
-                            promotion = parsePromotion(tokens[3]);
-                            ws.makeMove(auth.username(),gameData.gameID(),auth.authToken(),new ChessMove(start, end, promotion));
-                        } catch (ParseException e) {
-                            System.out.println("Expected: move <Start> <End> <Promotion> with positions of form a6, Promotion as a piece type or 'null'");
-                        } catch (IOException e) {
-                            System.out.println("Error making move. Please try again.");
-                        }
-                    } else {
-                        System.out.println("Expected: move <Start> <End> <Promotion> with positions of form a6, Promotion as a piece type or 'null'");
-                    }
-                } case "highlight" -> {
-                    if (tokens.length == 2) {
-                        try {
-                            ChessPosition pos = parsePosition(tokens[1]);
-                            System.out.println(highlight(pos));
-                        } catch (ParseException e) {
-                            System.out.println("Expected: highlight <Position> with position of form a6");
-                        }
-                    } else {
-                        System.out.println("Expected: highlight <Position> with position of form a6");
-                    }
-                }
-                default -> System.out.println(help("in game"));
+            String evaluated = evalGamePlay(cmd, tokens);
+            if (evaluated.equals("quit game")) {
+                return evaluated;
             }
         }
         while (true) {
@@ -399,45 +357,108 @@ public class ChessClient implements NotificationHandler {
             input = scanner.nextLine();
             tokens = input.toLowerCase().split(" ");
             cmd = ((tokens.length > 0) ? tokens[0] : "help");
-            switch (cmd) {
-                case "quit" -> {
-                    observing = false;
-                    try {
-                        ws.leaveGame(auth.username(),gameData.gameID());
-                        return "quit game";
-                    } catch (IOException e) {
-                        System.out.println("Error leaving game. Please try again.");
-                    }
+            if (cmd.equals("quit")) {
+                observing = false;
+                try {
+                    ws.leaveGame(auth.username(), gameData.gameID());
+                    return "quit game";
+                } catch (IOException e) {
+                    System.out.println("Error leaving game. Please try again.");
                 }
-                case "help" -> {
-                    System.out.println(help("post resign"));
-                }
+            } else {
+                System.out.println(help("post resign"));
             }
         }
+    }
+
+    private String evalGamePlay(String cmd, String[] tokens) {
+        switch (cmd) {
+            case "quit" -> {
+                observing = false;
+                try {
+                    ws.leaveGame(auth.username(),gameData.gameID());
+                    return "quit game";
+                } catch (IOException e) {
+                    System.out.println("Error leaving game. Please try again.");
+                }
+            }
+            case "redraw" -> {
+                System.out.println(drawBoard(orientationColor));
+            }
+            case "resign" -> {
+                System.out.print("You are about to resign, confirm? [y/n]: ");
+                String confirm = scanner.nextLine();
+                if (confirm.toLowerCase().startsWith("y")) {
+                    try {
+                        ws.resign(auth.username(),gameData.gameID());
+                        endedGames.add(gameData.gameID());
+                        gameOngoing = false;
+                    } catch (IOException e) {
+                        System.out.println("Error resigning. Please try again.");
+                    }
+                }
+            } case "move" -> {
+                ChessGame.TeamColor teamColor = (orientationColor.equals("white")) ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
+                if (!gameData.game().getTeamTurn().equals(teamColor)) {
+                    System.out.println("Error: not your turn");
+                    return "";
+                }
+                if (tokens.length == 4) {
+                    ChessPosition start;
+                    ChessPosition end;
+                    ChessPiece.PieceType promotion;
+                    try {
+                        start = parsePosition(tokens[1]);
+                        end = parsePosition(tokens[2]);
+                        promotion = parsePromotion(tokens[3]);
+                        ws.makeMove(auth.username(),gameData.gameID(),auth.authToken(),new ChessMove(start, end, promotion));
+                    } catch (ParseException e) {
+                        System.out.println("Expected: move <Start> <End> <Promotion> with positions of form a6, Promotion as a piece type or 'null'");
+                    } catch (IOException e) {
+                        System.out.println("Error making move. Please try again.");
+                    }
+                } else {
+                    System.out.println("Expected: move <Start> <End> <Promotion> with positions of form a6, Promotion as a piece type or 'null'");
+                }
+            } case "highlight" -> {
+                if (tokens.length == 2) {
+                    try {
+                        ChessPosition pos = parsePosition(tokens[1]);
+                        System.out.println(highlight(pos));
+                    } catch (ParseException e) {
+                        System.out.println("Expected: highlight <Position> with position of form a6");
+                    }
+                } else {
+                    System.out.println("Expected: highlight <Position> with position of form a6");
+                }
+            }
+            default -> System.out.println(help("in game"));
+        }
+        return "";
     }
 
     private ChessPosition parsePosition(String pos) throws ParseException {
         if (pos.length() != 2) {
             throw new ParseException("Could not parse",2);
         }
-        String row = String.valueOf(pos.charAt(0));
+        String col = String.valueOf(pos.charAt(0));
         int rowInt;
-        char col = pos.charAt(1);
+        char row = pos.charAt(1);
         int colInt;
         try {
-            colInt = Integer.parseInt(String.valueOf(col));
+            rowInt = Integer.parseInt(String.valueOf(row));
         } catch (NumberFormatException e) {
             throw new ParseException("could not parse",2);
         }
-        switch (row) {
-            case "a" -> rowInt = 1;
-            case "b" -> rowInt = 2;
-            case "c" -> rowInt = 3;
-            case "d" -> rowInt = 4;
-            case "e" -> rowInt = 5;
-            case "f" -> rowInt = 6;
-            case "g" -> rowInt = 7;
-            case "h" -> rowInt = 8;
+        switch (col) {
+            case "a" -> colInt = 1;
+            case "b" -> colInt = 2;
+            case "c" -> colInt = 3;
+            case "d" -> colInt = 4;
+            case "e" -> colInt = 5;
+            case "f" -> colInt = 6;
+            case "g" -> colInt = 7;
+            case "h" -> colInt = 8;
             default -> {throw new ParseException("could not parse",2);}
         }
         return new ChessPosition(rowInt,colInt);
@@ -459,9 +480,20 @@ public class ChessClient implements NotificationHandler {
     public void notify(ServerMessage notification) {
         if (notification.getServerMessageType().equals(ServerMessage.ServerMessageType.LOAD_GAME)) {
             gameData = notification.getGame();
+            System.out.println(drawBoard(orientationColor));
+            if (observing) {
+                System.out.print("[observing] >>> ");
+            } else {
+                System.out.print("[game play] >>> ");
+            }
         } else {
-            System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + notification.getMessage()+
-                    EscapeSequences.RESET_TEXT_COLOR);
+            String message = notification.getMessage();
+            if (message == null || message.equals("null")) {
+                message = notification.getErrorMessage();
+            }
+            System.out.print("\n" + EscapeSequences.SET_TEXT_COLOR_RED + message +
+                    EscapeSequences.RESET_TEXT_COLOR +
+                    "\n[game play] >>> ");
             Pattern forfeit = Pattern.compile("forfeited");
             Pattern checkmate = Pattern.compile("checkmate");
             Matcher forfeitMatcher = forfeit.matcher(notification.getMessage());
@@ -514,7 +546,7 @@ public class ChessClient implements NotificationHandler {
                     "\nredraw - redraw chess board" +
                     "\nhighlight <Position> - highlights the legal moves of the selected position," +
                     "positions should be of the form a1 or e6" +
-                    "help - view possible commands";
+                    "\nhelp - view possible commands";
         } else {
             return "position not recognized";
         }
@@ -546,6 +578,9 @@ public class ChessClient implements NotificationHandler {
         Collection<ChessMove> validMoves = new ArrayList<>();
         if (highlight != null) {
             validMoves = gameData.game().validMoves(highlight);
+            if (validMoves == null) {
+                validMoves = new ArrayList<>();
+            }
         }
         ArrayList<ChessPosition> endPositions = new ArrayList<>();
         for (ChessMove c : validMoves) {
@@ -663,6 +698,6 @@ public class ChessClient implements NotificationHandler {
     }
 
     private String highlight(ChessPosition position) {
-        return drawBoard(joinedColor,position);
+        return drawBoard(orientationColor,position);
     }
 }
