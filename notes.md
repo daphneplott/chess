@@ -1206,4 +1206,65 @@ public class WsEchoClient extends Endpoint {
 Create a WebSocket Facade class to wrap functionality. However, the facade isn't allowed to talk to the user, it has to send it to the client ui. To do this, have Client implement NotificationHandler, with a method notify(Notification n), and then give the Client to the WebSocketFacade as the notification handler. Create your own NotificationHandler interface and Notification class.
 
 
+# Concurrent Programming
+
+Different programs are called a 'process'. Each is given its own memory space to work in. However, if two programs try and access the same file, it could run into issues. 
+
+A thread is something the program is working on. Many programs only have one threads. However, a program can create multiple threads of control, such as main(), printDocument(), callWebApi() that happens in the background. Especially if something is going to take a while, you want to start a new thread so that the user interface doesn't freeze. A given program has to share it's memory space between each thread. A program will start with one main() thread, which could call or create other threads. Each thread then gets its own runtime stack. At a hardware level, a cpu has some number of cores. Each core gets to run one thread. There are lots and lots of threads, potentially hundreds or thousands, but you may only have 8 cores.
+
+Threading in Java
+- Create class extends Thread
+- Implement a 'run()' method
+- After creating the thread object, call object.start()
+
+Some things about threads
+- You can exit the main function, and they will continue to run
+- Can output simultaneously
+- Not deterministic in how they work simultaneously
+
+Execution
+- Parallel - multiple cores that run at the same time
+- Concurrent - gives each thread short turns on a single core, exchanges fast enough that it looks parallel
+- Sequential - run to completion
+- Can combine parallel and concurrent
+- Operating system gets to manage the execution
+
+Thread synchronization
+- Making a thread wait for another
+- Can use threadObject.join() to wait for the thread to finish its .start() method
+
+Thread Pools
+- Called an ExecutorService
+- A program submits tasks to the executor service
+- The ES puts all the tasks in the queues
+- The ES will move tasks onto threads once a thread becomes available
+- Tasks must implement the Runnable of Callable<V> interfaces and have a public void run() or public V call() method
+
+## Race Conditions
+
+What happens if two programs or threads want to access the same resource? Now the resource becomes a 'critical' or 'shared' resource. 
+If only one program gets to use the resource, the outcome will depend on who gets there first. The main idea is that everybody gets to take turns.
+
+If the programs are only read-only access to a resource, that won't bother anything. But if one is trying to read and one is writing, or if both are trying to write, then what happens depends on who gets there first.
+
+An example error is if you are trying to insert two items into a linked list, one of the nodes could be lost because nothing is pointing to it. The data structures could be corrupted and have errors if two threads want to update it simultaneously. 
+Another error is if two functions are both trying to update a file. What they read and write will interfere with what they expect. You can also get into empty files and throw errors because read-write will temporarily leave the file empty.
+Another error with databases if you try and update the same thing at once, then you can get duplicates.
+
+## Thread Safe Code
+
+Database Transactions
+- Make sure the interactions take turns
+- Bundle together interactions - call both lookup and insert together
+- If a transaction is dependent on the first lookup, then you can rollback the transaction and cancel the insert
+
+Synchronized Methods
+- A critical section is a section that only one thread should be allowed to run at a time
+- Turning on the 'take turns' button
+- Modify a method with 'synchronized' (ie, public synchronized void method())
+- Works on the object level - once one method is running, it locks the entire object until the method finishes
+
+
+
+
 
