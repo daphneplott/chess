@@ -424,6 +424,7 @@ public class ChessClient implements NotificationHandler {
     public void notify(ServerMessage notification) {
         if (notification.getServerMessageType().equals(ServerMessage.ServerMessageType.LOAD_GAME)) {
             gameData = notification.getGame();
+            System.out.println();
             System.out.println(drawBoard(orientationColor));
             if (observing) {
                 System.out.print("[observing] >>> ");

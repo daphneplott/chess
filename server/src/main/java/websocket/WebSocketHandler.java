@@ -156,12 +156,12 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             String start = parsePosition(move.getStartPosition());
             String end = parsePosition(move.getEndPosition());
             String message1 = String.format("%s moved the piece from %s to %s",username,start,end);
-            String teamName = (game.getTeamTurn() == ChessGame.TeamColor.WHITE) ? "White" : "Black";
+            String otherUser = (game.getTeamTurn() == ChessGame.TeamColor.WHITE) ? gameData.whiteUsername() : gameData.blackUsername();
             String message2 = "";
             if (game.isInCheckmate(game.getTeamTurn())) {
-                message2 = String.format("%s is in checkmate", teamName);
+                message2 = String.format("%s is in checkmate", otherUser);
             } else if (game.isInCheck(game.getTeamTurn())) {
-                message2 = String.format("%s is in check", teamName);
+                message2 = String.format("%s is in check", otherUser);
             }
             var notification3 = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME,gameData);
             var notification1 = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,message1,null);
