@@ -1263,8 +1263,22 @@ Synchronized Methods
 - Turning on the 'take turns' button
 - Modify a method with 'synchronized' (ie, public synchronized void method())
 - Works on the object level - once one method is running, it locks the entire object until the method finishes
+- Synchronized blocks: for a given method, write it as "method signature() { synchronized (lockObject) { stuff } }"
 
 
+# Final Review
+
+Hash functions: Non reversible, sensitive to small changes, can compare the 'fingerprint' of two items. Used in bitcoin mining, checking to see if data has been changed, and storing passwords more securely. Every user gets some salt to add into their password as well. Want to use a slow hash function in some cases to more securely store data.
+
+Encryption: Symmetric key and asymmetric key. Asymmetric has a private and public key that reverse each other. Generally the public key is used to encrypt the data, and send it to the person with the private key. Symmetric uses the same key for encrypt and decrypt. Asymmetric is slow, and encrypts a relatively small amount of data. It is used for ditigal signatures, but isn't feasible for general data transfer. So, we generally use asymmetric to exchange a symmetric key, and then use the symmetric key. This is called Secure Key Exchange. HTTPS authentication uses certificates signed with a digital signature. To do this, the signer runs data through a cryptographic hash function, then encrypts it using private key. This is the 'signature', which is then sent. The reciever will hash the original data itself, and then decode the signature using the public key. If the two hashes are the same, we know that the public key we have is associated with the private key somebody else has. 
+
+Concurrency: we think that multiple things are happening at the same time. Parrallelism is when multiple cores are actually running at the same time. Concurrent is when threads take turns on a core. Sequential is if one has to finish first before the next can start. You might get race conditions is resources are shared and updated as the two threads run. If the resource is read-only, it's not an issue. It's only a critical resource if something tries to update or change it. Even the terminal output can be a critical resource. To help with turn taking, you can use database transactions. Can use the synchronized keyword to ensure that an object is only updated by one method at a time.
+
+Atomic - either executions all happen together or they all fail together. No partial execution.
+
+Atomic variables: synchronization is expensive. Instead, Java has built in variable types like "Atomic Integer" which ensures that multiple threads can't interfere with the same object. It accesses specific hardware instructions to go about it more efficiently. Instead of synchronizing methods, just create an atomic object. Some of the atomic operations will do two things at once, such as incrementAndAdd(). 
+
+Command Line Build: lets you run a script to deploy an application. To build, you need to retrieve source code, download dependencies, compile, run tests, measure test coverage, package, install or deploy. Maven is a tool in the Java world to do command line builds. Maven is a command line progam, with commands like "mvn clean". Maven needs a specific project directory structure to run well. Holds configuration information in pom.xml files. This info is like the name, version, url, dependencies information, build instruction plugins, reporting plugins. Lists what to execute when it builds. By default, IntelliJ uses its own internal build system. With the right config files, it can be both a Maven and an IntelliJ project. 
 
 
 
